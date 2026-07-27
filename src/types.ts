@@ -155,4 +155,30 @@ export type SubmoduleTab =
   | 'reservations'
   | 'payments'
   | 'feedback'
-  | 'laravel_integration';
+  | 'laravel_integration'
+  | 'settings';
+
+export interface AgencyBrandingSettings {
+  companyName: string;
+  shortName: string;
+  accreditationNo: string;
+  tagline: string;
+  email: string;
+  phone: string;
+  address: string;
+  currencySymbol: string;
+  defaultDownpaymentPct: number;
+}
+
+export interface UiThemeSettings {
+  colorScheme: 'cyan' | 'amber' | 'emerald' | 'indigo' | 'rose';
+  density: 'spacious' | 'compact';
+  bgTone: 'slate-950' | 'zinc-950' | 'neutral-900';
+  showBorders: boolean;
+  enableAnimations: boolean;
+}
+
+export interface AppSettings {
+  agency: AgencyBrandingSettings;
+  theme: UiThemeSettings;
+}

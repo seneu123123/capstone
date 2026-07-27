@@ -14,7 +14,8 @@ import {
   Luggage,
   Sparkles,
   Server,
-  Code
+  Code,
+  Settings as SettingsIcon
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -25,6 +26,7 @@ interface NavbarProps {
   onOpenCapstoneModal: () => void;
   bookingCount: number;
   pendingPaymentCount: number;
+  companyName?: string;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -35,6 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenCapstoneModal,
   bookingCount,
   pendingPaymentCount,
+  companyName = "Holiday Travelers Travel and Tours Inc"
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur border-b border-slate-800 text-slate-100 shadow-xl">
@@ -43,16 +46,16 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center justify-between h-16">
           {/* Logo & Brand */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
               <Compass className="w-6 h-6 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-cyan-300 bg-clip-text text-transparent">
-                  VoyageCraft
+                <span className="font-bold text-base sm:text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-cyan-300 bg-clip-text text-transparent truncate max-w-[280px] sm:max-w-none">
+                  {companyName}
                 </span>
-                <span className="hidden md:inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                  Capstone System
+                <span className="hidden xl:inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                  DOT Accredited
                 </span>
               </div>
               <p className="text-xs text-slate-400 hidden sm:block">
@@ -220,6 +223,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="px-1.5 py-0.2 rounded bg-cyan-500/20 text-[10px] text-cyan-300 border border-cyan-500/30 font-mono">
               PostgreSQL
             </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition ${
+              activeTab === 'settings'
+                ? 'bg-slate-800 text-purple-400 border border-purple-500/30'
+                : 'text-slate-400 hover:text-purple-300 hover:bg-slate-900'
+            }`}
+          >
+            <SettingsIcon className="w-3.5 h-3.5 text-purple-400" />
+            <span className="font-semibold">7. Agency & UI Settings</span>
           </button>
         </div>
       </div>

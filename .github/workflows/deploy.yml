@@ -14,7 +14,7 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_DB: voyagecraft_db
+          POSTGRES_DB: holidaytravelers_db
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: secretpassword
         ports:
@@ -49,7 +49,7 @@ jobs:
         DB_CONNECTION: pgsql
         DB_HOST: 127.0.0.1
         DB_PORT: 5432
-        DB_DATABASE: voyagecraft_db
+        DB_DATABASE: holidaytravelers_db
         DB_USERNAME: postgres
         DB_PASSWORD: secretpassword
       run: php artisan migrate --force
@@ -59,7 +59,7 @@ jobs:
         DB_CONNECTION: pgsql
         DB_HOST: 127.0.0.1
         DB_PORT: 5432
-        DB_DATABASE: voyagecraft_db
+        DB_DATABASE: holidaytravelers_db
         DB_USERNAME: postgres
         DB_PASSWORD: secretpassword
       run: vendor/bin/phpunit

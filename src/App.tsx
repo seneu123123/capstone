@@ -29,13 +29,53 @@ import { HotelTransportReservation } from './components/submodules/HotelTranspor
 import { PaymentInvoiceManagement } from './components/submodules/PaymentInvoiceManagement';
 import { CustomerFeedbackRating } from './components/submodules/CustomerFeedbackRating';
 import { LaravelIntegrationHub } from './components/submodules/LaravelIntegrationHub';
+import { SystemSettings } from './components/submodules/SystemSettings';
 import { SkeletonLoader } from './components/common/SkeletonLoader';
+import { AppSettings } from './types';
+
+const DEFAULT_SETTINGS: AppSettings = {
+  agency: {
+    companyName: 'Holiday Travelers Travel and Tours Inc',
+    shortName: 'Holiday Travelers',
+    accreditationNo: 'DOT-ACCR-RO7-2026-8819',
+    tagline: 'Creating Unforgettable Memories Across the Philippine Islands',
+    email: 'bookings@holidaytravelers.ph',
+    phone: '+63 (032) 412-8899 / +63 917 888 7766',
+    address: 'Suite 402, Holiday Tower, Maxilom Avenue, Cebu City, Philippines',
+    currencySymbol: '₱',
+    defaultDownpaymentPct: 30
+  },
+  theme: {
+    colorScheme: 'cyan',
+    density: 'spacious',
+    bgTone: 'slate-950',
+    showBorders: true,
+    enableAnimations: true
+  }
+};
 
 export default function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('customer');
   const [activeTab, setActiveTab] = useState<SubmoduleTab>('packages');
   const [isTabLoading, setIsTabLoading] = useState<boolean>(false);
   const [isCapstoneModalOpen, setIsCapstoneModalOpen] = useState<boolean>(false);
+
+  // App Settings Customization
+  const [appSettings, setAppSettings] = useState<AppSettings>(() => {
+    const saved = localStorage.getItem('holiday_travelers_settings');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return DEFAULT_SETTINGS;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('holiday_travelers_settings', JSON.stringify(appSettings));
+  }, [appSettings]);
 
   // Persistent State
   const [packages, setPackages] = useState<TourPackage[]>(() => getStoredPackages());
@@ -179,6 +219,7 @@ export default function App() {
         onOpenCapstoneModal={() => setIsCapstoneModalOpen(true)}
         bookingCount={bookings.length}
         pendingPaymentCount={pendingPaymentsCount}
+        companyName={appSettings.agency.companyName}
       />
 
       {/* Main Workspace Body */}
@@ -268,6 +309,15 @@ export default function App() {
             {activeTab === 'laravel_integration' && (
               <LaravelIntegrationHub />
             )}
+
+            {/* Submodule 7: System Settings & Agency Branding */}
+            {activeTab === 'settings' && (
+              <SystemSettings
+                settings={appSettings}
+                onUpdateSettings={(newSettings) => setAppSettings(newSettings)}
+                onResetSettings={() => setAppSettings(DEFAULT_SETTINGS)}
+              />
+            )}
           </>
         )}
       </main>
@@ -276,7 +326,7 @@ export default function App() {
       <footer className="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div>
-            <strong>VoyageCraft Capstone</strong> — Tour Operations and Customer Booking System
+            <strong>{appSettings.agency.companyName}</strong> — Tour Operations and Customer Booking System ({appSettings.agency.accreditationNo})
           </div>
           <div className="flex items-center gap-2 text-[11px] text-slate-400">
             <span>6/6 Submodules Verified</span>

@@ -28,7 +28,7 @@ export const LaravelIntegrationHub: React.FC = () => {
   const [apiEndpoint, setApiEndpoint] = useState<string>('POST /api/v1/auth/login');
   const [sanctumToken, setSanctumToken] = useState<string>('1|sanctum_p3x_98412039841029384910238');
   const [requestBody, setRequestBody] = useState<string>(
-    JSON.stringify({ email: 'operator@voyagecraft.com', password: 'secretpassword' }, null, 2)
+    JSON.stringify({ email: 'operator@holidaytravelers.ph', password: 'secretpassword' }, null, 2)
   );
   const [apiResponse, setApiResponse] = useState<any>(null);
   const [isLoadingApi, setIsLoadingApi] = useState<boolean>(false);
@@ -142,7 +142,7 @@ class BookingController extends Controller
 <html lang="en" class="h-full bg-slate-950">
 <head>
     <meta charset="UTF-8">
-    <title>VoyageCraft Capstone — Laravel + Blade</title>
+    <title>Holiday Travelers Travel and Tours Inc — Laravel + Blade</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -151,7 +151,7 @@ class BookingController extends Controller
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <i data-lucide="compass" class="text-cyan-400"></i>
-                <span class="font-bold text-white">VoyageCraft</span>
+                <span class="font-bold text-white">Holiday Travelers</span>
             </div>
             <div class="text-xs text-slate-400">Sanctum Auth Active</div>
         </div>
@@ -201,7 +201,7 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_DB: voyagecraft_db
+          POSTGRES_DB: holidaytravelers_db
           POSTGRES_PASSWORD: secretpassword
         ports: [5432:5432]
     steps:
@@ -217,7 +217,7 @@ jobs:
       lang: 'yaml',
       code: `services:
   - type: web
-    name: voyagecraft-laravel-api
+    name: holidaytravelers-laravel-api
     env: docker
     plan: free
     region: singapore
@@ -227,12 +227,12 @@ jobs:
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
-        fromDatabase: { name: voyagecraft-postgres, property: host }
+        fromDatabase: { name: holidaytravelers-postgres, property: host }
 
   - type: postgres
-    name: voyagecraft-postgres
+    name: holidaytravelers-postgres
     plan: free
-    databaseName: voyagecraft_capstone`
+    databaseName: holidaytravelers_capstone`
     }
   };
 
@@ -254,7 +254,7 @@ jobs:
           user: {
             id: 'usr-90412',
             name: 'Colleague Operator',
-            email: 'operator@voyagecraft.com',
+            email: 'operator@holidaytravelers.ph',
             role: 'operator'
           }
         });
@@ -483,7 +483,7 @@ jobs:
                     const endpoint = e.target.value;
                     setApiEndpoint(endpoint);
                     if (endpoint.includes('login')) {
-                      setRequestBody(JSON.stringify({ email: 'operator@voyagecraft.com', password: 'secretpassword' }, null, 2));
+                      setRequestBody(JSON.stringify({ email: 'operator@holidaytravelers.ph', password: 'secretpassword' }, null, 2));
                     } else if (endpoint.includes('bookings')) {
                       setRequestBody(JSON.stringify({
                         tour_package_id: 'pkg-elnido-01',

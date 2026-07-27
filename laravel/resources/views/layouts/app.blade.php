@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'VoyageCraft Capstone — Tour Operations System')</title>
+    <title>@yield('title', 'Holiday Travelers Travel & Tours Inc — Tour Operations System')</title>
     
     <!-- Tailwind CSS v3 via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -40,7 +40,7 @@
                         <i data-lucide="compass" class="w-6 h-6"></i>
                     </div>
                     <div>
-                        <span class="font-bold text-lg text-white">VoyageCraft</span>
+                        <span class="font-bold text-lg text-white">Holiday Travelers</span>
                         <span class="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-mono">
                             Laravel + Sanctum + PostgreSQL
                         </span>
@@ -76,7 +76,7 @@
 
     <!-- Footer -->
     <footer class="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500">
-        <p>VoyageCraft Capstone • Integrated Laravel Blade, Sanctum REST API & PostgreSQL Architecture</p>
+        <p>Holiday Travelers Travel and Tours Inc Capstone • Integrated Laravel Blade, Sanctum REST API & PostgreSQL Architecture</p>
     </footer>
 
     <script>

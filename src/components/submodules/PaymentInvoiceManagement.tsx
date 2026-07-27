@@ -234,7 +234,7 @@ export const PaymentInvoiceManagement: React.FC<PaymentInvoiceManagementProps> =
               {/* Header */}
               <div className="flex justify-between items-start border-b border-slate-800 pb-4">
                 <div>
-                  <h2 className="text-xl font-black text-cyan-400 tracking-wider uppercase">VOYAGECRAFT TRAVEL & TOURS</h2>
+                  <h2 className="text-xl font-black text-cyan-400 tracking-wider uppercase">HOLIDAY TRAVELERS TRAVEL & TOURS INC</h2>
                   <p className="text-[11px] text-slate-400 mt-1">Licensed Tour Operator & Travel Agency</p>
                   <p className="text-[11px] text-slate-400">Tax ID: 902-182-9381-000 • Manila, Philippines</p>
                 </div>

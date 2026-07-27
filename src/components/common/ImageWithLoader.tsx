@@ -34,7 +34,7 @@ export const ImageWithLoader: React.FC<ImageWithLoaderProps> = ({
       <rect width="100%" height="100%" fill="url(#bg)" />
       <circle cx="400" cy="180" r="70" fill="#06b6d4" opacity="0.15" />
       <text x="50%" y="45%" dominant-baseline="middle" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-size="28" font-weight="bold">${titleText}</text>
-      <text x="50%" y="58%" dominant-baseline="middle" text-anchor="middle" fill="#38bdf8" font-family="sans-serif" font-size="16">VoyageCraft Tour Operations Asset</text>
+      <text x="50%" y="58%" dominant-baseline="middle" text-anchor="middle" fill="#38bdf8" font-family="sans-serif" font-size="16">Holiday Travelers Travel & Tours Inc Asset</text>
     </svg>`;
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
   };
