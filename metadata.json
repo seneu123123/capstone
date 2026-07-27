@@ -1,0 +1,6 @@
+{
+  "name": "Tour Operations & Customer Booking System",
+  "description": "Capstone System for Travel & Tours: Package Creation, Customer Booking, Itinerary Management, Hotel & Transport Reservations, Invoicing, and Customer Feedback.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

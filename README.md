@@ -1,11 +1,45 @@
-<div align="center">
+# VoyageCraft Capstone — Tour Operations & Customer Booking System
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+A full-stack Tour Operations and Customer Booking Application featuring 6 integrated submodules, built with **React 18 + Vite + TypeScript + Tailwind CSS**, along with **Laravel + Sanctum + PostgreSQL** backend integration specifications.
 
-  <h1>Built with AI Studio</h2>
+## 🚀 Quick Start in VS Code (VSC)
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+### Prerequisites
+- **Node.js**: v18.0.0 or higher
+- **npm**: v9.0.0 or higher
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+### Running the Application
+1. **Open Project in VS Code**:
+   ```bash
+   code .
+   ```
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+3. **Start Development Server**:
+   ```bash
+   npm run dev
+   ```
+4. **Open Browser**:
+   Navigate to `http://localhost:3000`
 
-</div>
+---
+
+## 🛠️ Submodules Included
+
+1. **Tour Package Management Catalog**: Create, publish, edit, duplicate, and manage tour packages with saved high-resolution destination photos.
+2. **Customer Booking Manifest**: Register tourist bookings, auto-calculate pax totals, generate reference codes (`TT-YYYY-XXXX`), and track statuses.
+3. **Itinerary & Tour Guide Schedule**: Day-by-day activity timelines, tour guide assignment, and printable schedule sheets.
+4. **Hotel & Transport Reservations**: Issue hotel stay vouchers and vehicle/driver dispatch allocations with printable pass views.
+5. **Billing & Invoice Management**: Record deposit payments, track remaining balances, and issue official PDF-style invoices.
+6. **Customer Feedback & CSAT Ratings**: Post-tour review forms, 5-star multi-criteria ratings (guide, hotel, transport, value), and CSAT analytics.
+7. **Laravel + Sanctum + PostgreSQL Integration Hub**: Full PHP controllers, Blade layouts, Sanctum REST API endpoints, and Render deployment scripts.
+
+---
+
+## 🎨 Features & UI Highlights
+- **Skeleton Shimmer Loading**: Smooth skeleton loading screens instead of blank screens when navigating or loading images.
+- **Photo Persistence & Downloader**: High-resolution destination photo cards with local fallbacks and a 1-click **"Download / Save Photo"** feature.
+- **Dual View Modes**: Switch seamlessly between **Customer View** (for travelers) and **Operator Admin View** (for agency staff).
+- **VS Code Friendly**: Pre-configured `.vscode` settings, tasks, and launch scripts for instant single-click debugging.
