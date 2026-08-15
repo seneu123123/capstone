@@ -8,7 +8,8 @@ import {
   SubmoduleTab, 
   TourPackage, 
   TransportReservation, 
-  ViewMode 
+  ViewMode,
+  AppSettings
 } from './types';
 import { 
   getStoredBookings, 
@@ -19,19 +20,13 @@ import {
   saveFeedbacks, 
   savePackages 
 } from './utils/storage';
-import { Navbar } from './components/Navbar';
 import { CapstoneInfoModal } from './components/CapstoneInfoModal';
-import { AdminDashboard } from './components/AdminDashboard';
-import { TourPackageManagement } from './components/submodules/TourPackageManagement';
-import { CustomerBookingPortal } from './components/submodules/CustomerBookingPortal';
-import { ItineraryScheduleManagement } from './components/submodules/ItineraryScheduleManagement';
-import { HotelTransportReservation } from './components/submodules/HotelTransportReservation';
-import { PaymentInvoiceManagement } from './components/submodules/PaymentInvoiceManagement';
-import { CustomerFeedbackRating } from './components/submodules/CustomerFeedbackRating';
-import { LaravelIntegrationHub } from './components/submodules/LaravelIntegrationHub';
-import { SystemSettings } from './components/submodules/SystemSettings';
+import { ClientNavbar, ClientTab } from './components/client/ClientNavbar';
+import { ClientPortal } from './components/client/ClientPortal';
+import { AdminNavbar } from './components/admin/AdminNavbar';
+import { AdminPortal } from './components/admin/AdminPortal';
+import { AdminLoginModal } from './components/admin/AdminLoginModal';
 import { SkeletonLoader } from './components/common/SkeletonLoader';
-import { AppSettings } from './types';
 
 const DEFAULT_SETTINGS: AppSettings = {
   agency: {
@@ -55,10 +50,30 @@ const DEFAULT_SETTINGS: AppSettings = {
 };
 
 export default function App() {
-  const [viewMode, setViewMode] = useState<ViewMode>('customer');
-  const [activeTab, setActiveTab] = useState<SubmoduleTab>('packages');
+  // Navigation & View Mode State
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const saved = localStorage.getItem('holiday_view_mode');
+    return saved === 'operator' ? 'operator' : 'customer';
+  });
+
+  const [clientTab, setClientTab] = useState<ClientTab>('tours');
+  const [adminTab, setAdminTab] = useState<SubmoduleTab>('overview');
   const [isTabLoading, setIsTabLoading] = useState<boolean>(false);
+
+  // Modals & Auth State
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
   const [isCapstoneModalOpen, setIsCapstoneModalOpen] = useState<boolean>(false);
+  const [adminSession, setAdminSession] = useState<{ email: string; role: string } | null>(() => {
+    const saved = localStorage.getItem('holiday_admin_session');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  });
 
   // App Settings Customization
   const [appSettings, setAppSettings] = useState<AppSettings>(() => {
@@ -77,7 +92,19 @@ export default function App() {
     localStorage.setItem('holiday_travelers_settings', JSON.stringify(appSettings));
   }, [appSettings]);
 
-  // Persistent State
+  useEffect(() => {
+    localStorage.setItem('holiday_view_mode', viewMode);
+  }, [viewMode]);
+
+  useEffect(() => {
+    if (adminSession) {
+      localStorage.setItem('holiday_admin_session', JSON.stringify(adminSession));
+    } else {
+      localStorage.removeItem('holiday_admin_session');
+    }
+  }, [adminSession]);
+
+  // Persistent Data Collections
   const [packages, setPackages] = useState<TourPackage[]>(() => getStoredPackages());
   const [bookings, setBookings] = useState<Booking[]>(() => getStoredBookings());
   const [feedbacks, setFeedbacks] = useState<CustomerFeedback[]>(() => getStoredFeedbacks());
@@ -96,7 +123,7 @@ export default function App() {
     saveFeedbacks(feedbacks);
   }, [feedbacks]);
 
-  // Handler Submodule 01: Save/Edit Package
+  // CRUD Handlers for Packages
   const handleSavePackage = (newPkg: TourPackage) => {
     setPackages((prev) => {
       const idx = prev.findIndex((p) => p.id === newPkg.id);
@@ -123,7 +150,7 @@ export default function App() {
     setPackages((prev) => [duplicated, ...prev]);
   };
 
-  // Handler Submodule 02: Create Booking
+  // Booking Operations Handlers
   const handleCreateBooking = (newBooking: Booking) => {
     setBookings((prev) => [newBooking, ...prev]);
   };
@@ -134,14 +161,13 @@ export default function App() {
     );
   };
 
-  // Handler Submodule 03: Update Guide Assignment
+  // Dispatch & Allocations Handlers
   const handleUpdateGuide = (bookingId: string, guideName: string) => {
     setBookings((prev) =>
       prev.map((b) => (b.id === bookingId ? { ...b, assignedGuide: guideName } : b))
     );
   };
 
-  // Handler Submodule 04: Update Hotel & Transport
   const handleUpdateHotelReservation = (bookingId: string, hotel: HotelReservation) => {
     setBookings((prev) =>
       prev.map((b) => (b.id === bookingId ? { ...b, hotelReservation: hotel } : b))
@@ -154,7 +180,7 @@ export default function App() {
     );
   };
 
-  // Handler Submodule 05: Add Payment Record
+  // Invoices & Payments Handler
   const handleAddPaymentRecord = (bookingId: string, payment: PaymentRecord) => {
     setBookings((prev) =>
       prev.map((b) => {
@@ -181,7 +207,7 @@ export default function App() {
     );
   };
 
-  // Handler Submodule 06: Submit Feedback
+  // Feedback Handler
   const handleSubmitFeedback = (newFeedback: CustomerFeedback) => {
     setFeedbacks((prev) => [newFeedback, ...prev]);
   };
@@ -192,128 +218,104 @@ export default function App() {
     window.location.reload();
   };
 
-  const handleTabChange = (newTab: SubmoduleTab) => {
-    if (newTab === activeTab) return;
+  // Tab Loading Transitions
+  const handleClientTabChange = (newTab: ClientTab) => {
+    if (newTab === clientTab) return;
     setIsTabLoading(true);
-    setActiveTab(newTab);
-    setTimeout(() => {
-      setIsTabLoading(false);
-    }, 200);
+    setClientTab(newTab);
+    setTimeout(() => setIsTabLoading(false), 150);
   };
 
-  const handleSelectBookPackage = (pkg: TourPackage) => {
-    setPreSelectedPackage(pkg);
-    handleTabChange('bookings');
+  const handleAdminTabChange = (newTab: SubmoduleTab) => {
+    if (newTab === adminTab) return;
+    setIsTabLoading(true);
+    setAdminTab(newTab);
+    setTimeout(() => setIsTabLoading(false), 150);
+  };
+
+  // Auth Operations
+  const handleLoginSuccess = (email: string, role: string) => {
+    setAdminSession({ email, role });
+    setViewMode('operator');
+    setAdminTab('overview');
+  };
+
+  const handleLogout = () => {
+    setAdminSession(null);
+    setViewMode('customer');
+    setClientTab('tours');
   };
 
   const pendingPaymentsCount = bookings.filter((b) => b.invoice.balanceDue > 0).length;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-slate-950 flex flex-col">
-      {/* Top Navigation */}
-      <Navbar
-        viewMode={viewMode}
-        setViewMode={setViewMode}
-        activeTab={activeTab}
-        setActiveTab={handleTabChange}
-        onOpenCapstoneModal={() => setIsCapstoneModalOpen(true)}
-        bookingCount={bookings.length}
-        pendingPaymentCount={pendingPaymentsCount}
-        companyName={appSettings.agency.companyName}
-      />
+      {/* Dynamic Navigation Header based on View Mode */}
+      {viewMode === 'customer' ? (
+        <ClientNavbar
+          activeTab={clientTab}
+          onTabChange={handleClientTabChange}
+          onOpenLoginModal={() => setIsLoginModalOpen(true)}
+          onOpenSpecsModal={() => setIsCapstoneModalOpen(true)}
+          companyName={appSettings.agency.companyName}
+          phone={appSettings.agency.phone}
+          bookingCount={bookings.length}
+        />
+      ) : (
+        <AdminNavbar
+          activeTab={adminTab}
+          onTabChange={handleAdminTabChange}
+          onOpenCapstoneModal={() => setIsCapstoneModalOpen(true)}
+          onLogout={handleLogout}
+          bookingCount={bookings.length}
+          pendingPaymentCount={pendingPaymentsCount}
+          adminEmail={adminSession?.email || 'admin@holidaytravelers.ph'}
+          adminRole={adminSession?.role || 'Senior Tour Operations Manager'}
+        />
+      )}
 
       {/* Main Workspace Body */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {isTabLoading ? (
           <div className="space-y-6">
             <SkeletonLoader type="banner" />
-            <SkeletonLoader type={activeTab === 'packages' ? 'card' : 'table'} count={3} />
+            <SkeletonLoader type="card" count={3} />
           </div>
         ) : (
           <>
-            {/* Overview Tab (Operator Dashboard) */}
-            {viewMode === 'operator' && activeTab === 'overview' && (
-              <AdminDashboard
+            {viewMode === 'customer' ? (
+              <ClientPortal
+                activeTab={clientTab}
+                onTabChange={handleClientTabChange}
                 packages={packages}
                 bookings={bookings}
                 feedbacks={feedbacks}
-                onNavigateTab={handleTabChange}
+                onCreateBooking={handleCreateBooking}
+                onSubmitFeedback={handleSubmitFeedback}
+                preSelectedPackage={preSelectedPackage}
+                onSelectBookPackage={(pkg) => {
+                  setPreSelectedPackage(pkg);
+                  setClientTab('book');
+                }}
+                onClearPreSelectedPackage={() => setPreSelectedPackage(null)}
               />
-            )}
-
-            {/* Submodule 1: Tour Package Management */}
-            {activeTab === 'packages' && (
-              <TourPackageManagement
+            ) : (
+              <AdminPortal
+                activeTab={adminTab}
+                onTabChange={handleAdminTabChange}
                 packages={packages}
+                bookings={bookings}
+                feedbacks={feedbacks}
+                appSettings={appSettings}
                 onSavePackage={handleSavePackage}
                 onDeletePackage={handleDeletePackage}
                 onDuplicatePackage={handleDuplicatePackage}
-                isOperatorView={viewMode === 'operator'}
-                onSelectBookPackage={handleSelectBookPackage}
-              />
-            )}
-
-            {/* Submodule 2: Customer Booking and Registration */}
-            {activeTab === 'bookings' && (
-              <CustomerBookingPortal
-                packages={packages}
-                bookings={bookings}
-                onCreateBooking={handleCreateBooking}
                 onUpdateBookingStatus={handleUpdateBookingStatus}
-                isOperatorView={viewMode === 'operator'}
-                preSelectedPackage={preSelectedPackage}
-                onClearPreSelectedPackage={() => setPreSelectedPackage(null)}
-              />
-            )}
-
-            {/* Submodule 3: Itinerary and Schedule Management */}
-            {activeTab === 'itineraries' && (
-              <ItineraryScheduleManagement
-                packages={packages}
-                bookings={bookings}
                 onUpdateGuide={handleUpdateGuide}
-                isOperatorView={viewMode === 'operator'}
-              />
-            )}
-
-            {/* Submodule 4: Hotel and Transport Reservation */}
-            {activeTab === 'reservations' && (
-              <HotelTransportReservation
-                bookings={bookings}
                 onUpdateHotelReservation={handleUpdateHotelReservation}
                 onUpdateTransportReservation={handleUpdateTransportReservation}
-                isOperatorView={viewMode === 'operator'}
-              />
-            )}
-
-            {/* Submodule 5: Payment and Invoice Management */}
-            {activeTab === 'payments' && (
-              <PaymentInvoiceManagement
-                bookings={bookings}
                 onAddPaymentRecord={handleAddPaymentRecord}
-                isOperatorView={viewMode === 'operator'}
-              />
-            )}
-
-            {/* Submodule 6: Customer Feedback and Rating System */}
-            {activeTab === 'feedback' && (
-              <CustomerFeedbackRating
-                feedbacks={feedbacks}
-                bookings={bookings}
                 onSubmitFeedback={handleSubmitFeedback}
-                isOperatorView={viewMode === 'operator'}
-              />
-            )}
-
-            {/* Colleague Integration: Laravel + Sanctum + PostgreSQL Hub */}
-            {activeTab === 'laravel_integration' && (
-              <LaravelIntegrationHub />
-            )}
-
-            {/* Submodule 7: System Settings & Agency Branding */}
-            {activeTab === 'settings' && (
-              <SystemSettings
-                settings={appSettings}
                 onUpdateSettings={(newSettings) => setAppSettings(newSettings)}
                 onResetSettings={() => setAppSettings(DEFAULT_SETTINGS)}
               />
@@ -323,23 +325,46 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <footer className="border-t border-slate-900 bg-slate-950 py-6 text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div>
-            <strong>{appSettings.agency.companyName}</strong> — Tour Operations and Customer Booking System ({appSettings.agency.accreditationNo})
+            <strong>{appSettings.agency.companyName}</strong> — Tour Operations & Customer Booking System ({appSettings.agency.accreditationNo})
           </div>
-          <div className="flex items-center gap-2 text-[11px] text-slate-400">
+          <div className="flex items-center gap-3 text-[11px] text-slate-400">
             <span>6/6 Submodules Verified</span>
             <span>•</span>
             <button
               onClick={() => setIsCapstoneModalOpen(true)}
               className="text-cyan-400 hover:underline"
             >
-              View System Specs
+              System Specs
             </button>
+            <span>•</span>
+            {viewMode === 'customer' ? (
+              <button
+                onClick={() => setIsLoginModalOpen(true)}
+                className="text-slate-400 hover:text-cyan-400 underline"
+              >
+                Staff Portal Access
+              </button>
+            ) : (
+              <button
+                onClick={handleLogout}
+                className="text-rose-400 hover:underline"
+              >
+                Exit Operator Mode
+              </button>
+            )}
           </div>
         </div>
       </footer>
+
+      {/* Admin Login Modal */}
+      <AdminLoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
+      />
 
       {/* Capstone Info Modal */}
       <CapstoneInfoModal
