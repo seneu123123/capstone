@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+:root {
+  --admin-accent: #F26A4F;
+  --admin-accent-hover: #ff765b;
+  --admin-accent-rgb: 242, 106, 79;
+  --admin-font-display: 'Cormorant Garamond', Georgia, serif;
+  --admin-font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --admin-bg-base: #070B0E;
+  --admin-bg-card: #0B1014;
+  --admin-bg-subtle: #0E151A;
+  --admin-border: rgba(255, 255, 255, 0.08);
+  --admin-font-scale: 1;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -15,11 +28,11 @@
 
   /* Editorial typography classes */
   .font-serif-display {
-    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-family: var(--admin-font-display, 'Cormorant Garamond', Georgia, serif);
   }
   
   .font-sans-body {
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: var(--admin-font-body, 'Plus Jakarta Sans', system-ui, sans-serif);
   }
 
   /* Custom sleek oceanic scrollbar */
@@ -28,15 +41,42 @@
     height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #070B0E;
+    background: var(--admin-bg-base, #070B0E);
   }
   ::-webkit-scrollbar-thumb {
     background: #1B242C;
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #F26A4F;
+    background: var(--admin-accent, #F26A4F);
   }
+}
+
+/* Dynamic Admin Theming Utility Classes */
+.admin-theme-wrapper {
+  background-color: var(--admin-bg-base, #070B0E);
+  font-size: calc(1rem * var(--admin-font-scale, 1));
+}
+
+.admin-theme-card {
+  background-color: var(--admin-bg-card, #0B1014);
+  border-color: var(--admin-border, rgba(255, 255, 255, 0.08));
+}
+
+.admin-theme-accent-text {
+  color: var(--admin-accent, #F26A4F);
+}
+
+.admin-theme-accent-bg {
+  background-color: var(--admin-accent, #F26A4F);
+}
+
+.admin-theme-accent-border {
+  border-color: var(--admin-accent, #F26A4F);
+}
+
+.admin-theme-accent-glow {
+  box-shadow: 0 10px 25px -5px rgba(var(--admin-accent-rgb, 242, 106, 79), 0.25);
 }
 
 /* Emergent Editorial Atmosphere Styling */

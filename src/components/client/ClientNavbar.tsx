@@ -55,12 +55,17 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
           className="flex items-center gap-3 group focus:outline-none"
           id="brand-logo-link"
         >
-          <div className="w-8 h-8 rounded-full border border-sunset-coral/60 flex items-center justify-center text-sunset-coral group-hover:scale-105 transition-transform duration-300">
-            <Compass className="w-4 h-4" />
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sunset-coral/20 to-sunset-coral/10 border border-sunset-coral/60 flex items-center justify-center text-sunset-coral group-hover:scale-105 group-hover:border-sunset-coral transition-all duration-300 shadow-md shadow-sunset-coral/10">
+            <Compass className="w-5 h-5 group-hover:rotate-45 transition-transform duration-500" />
           </div>
-          <span className="font-serif-display text-2xl sm:text-3xl text-ivory tracking-wider font-light">
-            Archipelago
-          </span>
+          <div className="flex flex-col">
+            <span className="font-serif-display text-xl sm:text-2xl text-ivory tracking-wide font-normal leading-tight">
+              Holiday Travelers
+            </span>
+            <span className="text-[10px] font-sans-body tracking-[0.2em] uppercase text-sand-muted font-light">
+              Travel & Tours Inc.
+            </span>
+          </div>
         </a>
 
         {/* Desktop Navigation Links */}
@@ -120,10 +125,11 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
 
           <button
             onClick={() => onOpenBooking()}
-            className="bg-sunset-coral hover:bg-[#ff7d63] text-white px-6 py-2.5 rounded-full text-sm font-medium tracking-wide shadow-lg shadow-sunset-coral/20 hover:shadow-sunset-coral/30 hover:scale-[1.02] transition-all duration-300"
+            className="group relative inline-flex items-center justify-center gap-2 bg-sunset-coral hover:bg-[#ff765b] text-white px-7 py-3 rounded-full text-xs font-semibold tracking-[0.15em] uppercase shadow-xl shadow-sunset-coral/30 hover:shadow-sunset-coral/50 hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 border border-white/10"
             id="nav-begin-journey-btn"
           >
-            Begin Journey
+            <span>Begin Journey</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-white/80 group-hover:bg-white animate-pulse" />
           </button>
         </div>
 

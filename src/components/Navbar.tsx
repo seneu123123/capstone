@@ -142,7 +142,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <MapPin className="w-3.5 h-3.5" />
-            <span>1. Tour Package Management</span>
+            <span>Tour Package Management</span>
           </button>
 
           <button
@@ -154,7 +154,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <UserCheck className="w-3.5 h-3.5" />
-            <span>2. Customer Bookings ({bookingCount})</span>
+            <span>Booking & Passenger Manifest ({bookingCount})</span>
           </button>
 
           <button
@@ -166,7 +166,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <Calendar className="w-3.5 h-3.5" />
-            <span>3. Itinerary & Schedule</span>
+            <span>Itinerary & Schedule Management</span>
           </button>
 
           <button
@@ -178,7 +178,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <Hotel className="w-3.5 h-3.5" />
-            <span>4. Hotel & Transport</span>
+            <span>Hotel & Transport Logistics</span>
           </button>
 
           <button
@@ -190,7 +190,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <CreditCard className="w-3.5 h-3.5" />
-            <span>5. Payment & Invoices</span>
+            <span>Payment & Invoice Management</span>
             {pendingPaymentCount > 0 && (
               <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500/20 text-amber-300 font-bold">
                 {pendingPaymentCount}
@@ -207,7 +207,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <Star className="w-3.5 h-3.5 text-amber-400" />
-            <span>6. Feedback & Ratings</span>
+            <span>Customer Feedback & Ratings</span>
           </button>
 
           <button
@@ -219,7 +219,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <Server className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="font-bold">Laravel + Sanctum Hub</span>
+            <span className="font-bold">Laravel Integration Hub</span>
             <span className="px-1.5 py-0.2 rounded bg-cyan-500/20 text-[10px] text-cyan-300 border border-cyan-500/30 font-mono">
               PostgreSQL
             </span>
@@ -234,7 +234,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <SettingsIcon className="w-3.5 h-3.5 text-purple-400" />
-            <span className="font-semibold">7. Agency & UI Settings</span>
+            <span className="font-semibold">Agency & System Settings</span>
           </button>
         </div>
       </div>

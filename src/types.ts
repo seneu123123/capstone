@@ -170,12 +170,25 @@ export interface AgencyBrandingSettings {
   defaultDownpaymentPct: number;
 }
 
+export type ThemeAccentColor = 'coral' | 'cyan' | 'emerald' | 'amber' | 'indigo' | 'purple' | 'rose' | 'teal';
+export type ThemeFontDisplay = 'cormorant' | 'jakarta' | 'cinzel' | 'outfit' | 'space' | 'playfair' | 'jetbrains';
+export type ThemeFontBody = 'jakarta' | 'inter' | 'outfit' | 'dmsans' | 'jetbrains';
+export type ThemeBgTone = 'obsidian' | 'slate' | 'zinc' | 'marine';
+export type ThemeBorderStyle = 'subtle' | 'high-contrast' | 'minimal';
+export type ThemeFontSize = 'compact' | 'standard' | 'large';
+
 export interface UiThemeSettings {
-  colorScheme: 'cyan' | 'amber' | 'emerald' | 'indigo' | 'rose';
-  density: 'spacious' | 'compact';
-  bgTone: 'slate-950' | 'zinc-950' | 'neutral-900';
-  showBorders: boolean;
-  enableAnimations: boolean;
+  accentColor: ThemeAccentColor;
+  fontDisplay: ThemeFontDisplay;
+  fontBody: ThemeFontBody;
+  bgTone: ThemeBgTone;
+  borderStyle: ThemeBorderStyle;
+  fontSize: ThemeFontSize;
+  cardGlow: boolean;
+  colorScheme?: 'coral' | 'cyan' | 'amber' | 'emerald' | 'indigo' | 'rose';
+  density?: 'spacious' | 'compact';
+  showBorders?: boolean;
+  enableAnimations?: boolean;
 }
 
 export interface AppSettings {

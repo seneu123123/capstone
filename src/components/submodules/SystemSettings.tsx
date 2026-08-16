@@ -1,5 +1,14 @@
-import React, { useState } from 'react';
-import { AppSettings } from '../../types';
+import React, { useState, useEffect } from 'react';
+import { 
+  AppSettings, 
+  UiThemeSettings, 
+  ThemeAccentColor, 
+  ThemeFontDisplay, 
+  ThemeFontBody, 
+  ThemeBgTone, 
+  ThemeBorderStyle, 
+  ThemeFontSize 
+} from '../../types';
 import { 
   Settings as SettingsIcon, 
   Building2, 
@@ -15,8 +24,24 @@ import {
   DollarSign, 
   Sparkles,
   Eye,
-  FileText
+  FileText,
+  Compass,
+  Type,
+  Moon,
+  Layout,
+  Crown,
+  Zap,
+  SlidersHorizontal,
+  Laptop
 } from 'lucide-react';
+import { 
+  ACCENT_COLORS, 
+  DISPLAY_FONTS, 
+  BODY_FONTS, 
+  BG_TONES, 
+  THEME_PRESETS, 
+  applyAdminTheme 
+} from '../../utils/theme';
 
 interface SystemSettingsProps {
   settings: AppSettings;
@@ -31,7 +56,12 @@ export const SystemSettings: React.FC<SystemSettingsProps> = ({
 }) => {
   const [formData, setFormData] = useState<AppSettings>(settings);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [activeSubTab, setActiveSubTab] = useState<'agency' | 'theme' | 'backup'>('agency');
+  const [activeSubTab, setActiveSubTab] = useState<'theme' | 'agency' | 'backup'>('theme');
+
+  // Keep local state in sync if prop changes
+  useEffect(() => {
+    setFormData(settings);
+  }, [settings]);
 
   const handleAgencyChange = (field: keyof AppSettings['agency'], value: any) => {
     setFormData((prev) => ({
@@ -43,21 +73,57 @@ export const SystemSettings: React.FC<SystemSettingsProps> = ({
     }));
   };
 
-  const handleThemeChange = (field: keyof AppSettings['theme'], value: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      theme: {
-        ...prev.theme,
-        [field]: value
-      }
-    }));
+  const handleThemeChange = <K extends keyof UiThemeSettings>(field: K, value: UiThemeSettings[K]) => {
+    const updatedTheme: UiThemeSettings = {
+      ...formData.theme,
+      [field]: value
+    };
+
+    const newFormData: AppSettings = {
+      ...formData,
+      theme: updatedTheme
+    };
+
+    setFormData(newFormData);
+    // Real-time live visual feedback immediately
+    applyAdminTheme(updatedTheme);
   };
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleApplyPreset = (preset: typeof THEME_PRESETS[0]) => {
+    const updatedTheme: UiThemeSettings = {
+      ...formData.theme,
+      ...preset.theme
+    };
+
+    const newFormData: AppSettings = {
+      ...formData,
+      theme: updatedTheme
+    };
+
+    setFormData(newFormData);
+    applyAdminTheme(updatedTheme);
+  };
+
+  const handleSave = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     onUpdateSettings(formData);
+    applyAdminTheme(formData.theme);
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 2500);
+  };
+
+  const handleReset = () => {
+    onResetSettings();
+    const defaultTheme: UiThemeSettings = {
+      accentColor: 'coral',
+      fontDisplay: 'cormorant',
+      fontBody: 'jakarta',
+      bgTone: 'obsidian',
+      borderStyle: 'subtle',
+      fontSize: 'standard',
+      cardGlow: true,
+    };
+    applyAdminTheme(defaultTheme);
   };
 
   const handleExportJson = () => {
@@ -70,44 +136,48 @@ export const SystemSettings: React.FC<SystemSettingsProps> = ({
     downloadAnchor.remove();
   };
 
+  const currentAccent = ACCENT_COLORS[formData.theme.accentColor] || ACCENT_COLORS.coral;
+  const currentDisplayFont = DISPLAY_FONTS[formData.theme.fontDisplay] || DISPLAY_FONTS.cormorant;
+  const currentBodyFont = BODY_FONTS[formData.theme.fontBody] || BODY_FONTS.jakarta;
+  const currentBgTone = BG_TONES[formData.theme.bgTone] || BG_TONES.obsidian;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Module Header Banner */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
-        
+      <div className="bg-[#0B1014] border border-white/[0.08] rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative z-10">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                SYSTEM CONFIGURATION
-              </span>
-              <span className="text-xs text-slate-400 font-mono">Module #7</span>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-xs font-sans-body tracking-[0.25em] uppercase font-medium" style={{ color: currentAccent.hex }}>
+              <Palette className="w-4 h-4" />
+              <span>Operator Command Center Settings</span>
             </div>
-            <h1 className="text-2xl font-bold text-white mt-1">Agency & UI Customization Settings</h1>
-            <p className="text-sm text-slate-400 mt-1">
-              Customize <strong className="text-purple-300">{formData.agency.companyName}</strong> branding, accreditation details, contact numbers, and UI themes.
+            <h1 className="font-serif-display text-3xl sm:text-4xl font-light text-ivory tracking-wide">
+              Theme Aesthetics & Agency Configuration
+            </h1>
+            <p className="text-xs sm:text-sm text-sand-muted max-w-2xl font-light leading-relaxed">
+              Personalize typography styles, accent palettes, and atmospheric dark modes, or manage <span className="text-ivory font-normal">{formData.agency.companyName}</span> DOT registration details.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             <button
-              onClick={onResetSettings}
+              onClick={handleReset}
               type="button"
-              className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition flex items-center gap-2"
+              className="px-4 py-2 rounded-full text-xs font-sans-body text-sand-muted hover:text-ivory bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 transition flex items-center gap-2"
             >
               <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
               <span>Reset Defaults</span>
             </button>
             <button
-              onClick={handleSave}
+              onClick={() => handleSave()}
               type="button"
-              className="px-4 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-600/30 transition flex items-center gap-2"
+              style={{ backgroundColor: currentAccent.hex }}
+              className="px-6 py-2.5 rounded-full text-xs font-semibold tracking-wider text-white shadow-xl hover:brightness-110 active:scale-95 transition-all flex items-center gap-2"
             >
               {saveSuccess ? (
                 <>
-                  <Check className="w-4 h-4 text-emerald-300" />
-                  <span>Settings Saved!</span>
+                  <Check className="w-4 h-4 text-white" />
+                  <span>Configuration Applied!</span>
                 </>
               ) : (
                 <>
@@ -119,379 +189,603 @@ export const SystemSettings: React.FC<SystemSettingsProps> = ({
           </div>
         </div>
 
-        {/* Subtab navigation */}
-        <div className="flex items-center gap-2 mt-6 pt-4 border-t border-slate-800 text-xs">
-          <button
-            onClick={() => setActiveSubTab('agency')}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl font-medium transition ${
-              activeSubTab === 'agency'
-                ? 'bg-purple-600/20 text-purple-300 border border-purple-500/40 font-bold'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
-            }`}
-          >
-            <Building2 className="w-4 h-4 text-purple-400" />
-            <span>Company Branding & DOT Profile</span>
-          </button>
+        {/* Sub Navigation Tabs */}
+        <div className="flex items-center gap-2 mt-8 pt-6 border-t border-white/[0.08] text-xs font-sans-body overflow-x-auto pb-1">
           <button
             onClick={() => setActiveSubTab('theme')}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl font-medium transition ${
+            style={activeSubTab === 'theme' ? { backgroundColor: currentAccent.hex, color: '#FFFFFF' } : {}}
+            className={`px-4 py-2 rounded-full tracking-wider transition-all flex items-center gap-2 whitespace-nowrap ${
               activeSubTab === 'theme'
-                ? 'bg-purple-600/20 text-purple-300 border border-purple-500/40 font-bold'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                ? 'font-semibold shadow-lg shadow-black/40'
+                : 'bg-white/[0.04] text-sand-muted hover:text-ivory hover:bg-white/[0.08]'
             }`}
           >
-            <Palette className="w-4 h-4 text-cyan-400" />
-            <span>UI Appearance & Theme</span>
+            <Palette className="w-3.5 h-3.5" />
+            <span>Theme Colors & Fonts</span>
+          </button>
+          <button
+            onClick={() => setActiveSubTab('agency')}
+            style={activeSubTab === 'agency' ? { backgroundColor: currentAccent.hex, color: '#FFFFFF' } : {}}
+            className={`px-4 py-2 rounded-full tracking-wider transition-all flex items-center gap-2 whitespace-nowrap ${
+              activeSubTab === 'agency'
+                ? 'font-semibold shadow-lg shadow-black/40'
+                : 'bg-white/[0.04] text-sand-muted hover:text-ivory hover:bg-white/[0.08]'
+            }`}
+          >
+            <Building2 className="w-3.5 h-3.5" />
+            <span>Agency Information & DOT</span>
           </button>
           <button
             onClick={() => setActiveSubTab('backup')}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl font-medium transition ${
+            style={activeSubTab === 'backup' ? { backgroundColor: currentAccent.hex, color: '#FFFFFF' } : {}}
+            className={`px-4 py-2 rounded-full tracking-wider transition-all flex items-center gap-2 whitespace-nowrap ${
               activeSubTab === 'backup'
-                ? 'bg-purple-600/20 text-purple-300 border border-purple-500/40 font-bold'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                ? 'font-semibold shadow-lg shadow-black/40'
+                : 'bg-white/[0.04] text-sand-muted hover:text-ivory hover:bg-white/[0.08]'
             }`}
           >
-            <Download className="w-4 h-4 text-emerald-400" />
-            <span>Export & Backup</span>
+            <Download className="w-3.5 h-3.5" />
+            <span>Data Backup & JSON Export</span>
           </button>
         </div>
       </div>
 
-      {/* Main Settings Form Container */}
-      <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          {/* SubTab 1: Agency Branding */}
-          {activeSubTab === 'agency' && (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <Building2 className="w-5 h-5 text-purple-400" />
-                  <span>Company Identity & Accreditation</span>
-                </h3>
-                <span className="text-xs text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-lg border border-purple-500/20 font-mono">
-                  Official Travel Agency Profile
+      {/* ========================================================================= */}
+      {/* SUBTAB 1: THEME & FONT CUSTOMIZATION                                      */}
+      {/* ========================================================================= */}
+      {activeSubTab === 'theme' && (
+        <div className="space-y-8">
+          {/* 1. Quick Presets Carousel Bar */}
+          <div className="bg-[#0B1014] border border-white/[0.06] rounded-2xl p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-sans-body uppercase tracking-[0.2em] text-sand-muted">
+                <Sparkles className="w-4 h-4" style={{ color: currentAccent.hex }} />
+                <span>1-Click Curated Theme Presets</span>
+              </div>
+              <span className="text-[11px] text-sand-muted font-light">Instant live preview on select</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {THEME_PRESETS.map((preset) => {
+                const isSelected = 
+                  formData.theme.accentColor === preset.theme.accentColor &&
+                  formData.theme.fontDisplay === preset.theme.fontDisplay &&
+                  formData.theme.bgTone === preset.theme.bgTone;
+                const presetAccent = ACCENT_COLORS[preset.theme.accentColor];
+
+                return (
+                  <button
+                    key={preset.id}
+                    onClick={() => handleApplyPreset(preset)}
+                    className={`p-4 rounded-xl text-left border transition-all duration-300 relative group flex flex-col justify-between ${
+                      isSelected
+                        ? 'bg-white/[0.08] shadow-lg'
+                        : 'bg-[#070B0E] border-white/[0.05] hover:border-white/20 hover:bg-white/[0.02]'
+                    }`}
+                    style={isSelected ? { borderColor: presetAccent.hex } : {}}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xl">{preset.previewEmoji}</span>
+                        <div 
+                          className="w-4 h-4 rounded-full border border-white/20 shadow-sm"
+                          style={{ backgroundColor: presetAccent.hex }}
+                        />
+                      </div>
+                      <h4 className="text-sm font-medium text-ivory group-hover:text-white transition-colors">
+                        {preset.name}
+                      </h4>
+                      <p className="text-[11px] text-sand-muted mt-1 line-clamp-2 font-light">
+                        {preset.description}
+                      </p>
+                    </div>
+
+                    {isSelected && (
+                      <div className="mt-3 pt-2 border-t border-white/10 flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold" style={{ color: presetAccent.hex }}>
+                        <Check className="w-3 h-3" />
+                        <span>Active Preset</span>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 2. Color Palette & Background Tone Customizer */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Accent Color Palette */}
+            <div className="bg-[#0B1014] border border-white/[0.06] rounded-2xl p-6 sm:p-7 shadow-xl space-y-5">
+              <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+                <div className="flex items-center gap-2">
+                  <Palette className="w-4 h-4" style={{ color: currentAccent.hex }} />
+                  <h3 className="font-serif-display text-2xl text-ivory">Primary Accent Color</h3>
+                </div>
+                <span className="text-xs font-mono px-2 py-0.5 rounded bg-white/[0.05] text-sand-muted border border-white/[0.08]">
+                  {currentAccent.hex}
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Registered Company Name *
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {(Object.keys(ACCENT_COLORS) as ThemeAccentColor[]).map((key) => {
+                  const color = ACCENT_COLORS[key];
+                  const isSelected = formData.theme.accentColor === key;
+
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => handleThemeChange('accentColor', key)}
+                      className={`p-3 rounded-xl border flex flex-col items-center gap-2.5 transition-all text-center ${
+                        isSelected
+                          ? 'bg-white/[0.08] shadow-md'
+                          : 'bg-[#070B0E] border-white/[0.06] hover:border-white/20'
+                      }`}
+                      style={isSelected ? { borderColor: color.hex } : {}}
+                    >
+                      <div className="relative">
+                        <div 
+                          className="w-10 h-10 rounded-xl shadow-md transition-transform group-hover:scale-105"
+                          style={{ backgroundColor: color.hex }}
+                        />
+                        {isSelected && (
+                          <div className="absolute inset-0 flex items-center justify-center text-white">
+                            <Check className="w-5 h-5 drop-shadow-md" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="space-y-0.5">
+                        <span className="text-xs font-medium text-ivory block leading-tight">{color.name}</span>
+                        <span className="text-[10px] font-mono text-sand-muted">{color.hex}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Background Atmosphere Tone */}
+            <div className="bg-[#0B1014] border border-white/[0.06] rounded-2xl p-6 sm:p-7 shadow-xl space-y-5">
+              <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+                <div className="flex items-center gap-2">
+                  <Moon className="w-4 h-4" style={{ color: currentAccent.hex }} />
+                  <h3 className="font-serif-display text-2xl text-ivory">Atmospheric Background Tone</h3>
+                </div>
+                <span className="text-xs text-sand-muted font-sans-body">{currentBgTone.name}</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                {(Object.keys(BG_TONES) as ThemeBgTone[]).map((key) => {
+                  const tone = BG_TONES[key];
+                  const isSelected = formData.theme.bgTone === key;
+
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => handleThemeChange('bgTone', key)}
+                      className={`p-4 rounded-xl border flex flex-col justify-between text-left transition-all ${
+                        isSelected
+                          ? 'bg-white/[0.08] shadow-md'
+                          : 'bg-[#070B0E] border-white/[0.06] hover:border-white/20'
+                      }`}
+                      style={isSelected ? { borderColor: currentAccent.hex } : {}}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-5 h-5 rounded-md border border-white/20"
+                            style={{ backgroundColor: tone.baseBg }}
+                          />
+                          <div 
+                            className="w-5 h-5 rounded-md border border-white/20"
+                            style={{ backgroundColor: tone.cardBg }}
+                          />
+                        </div>
+                        {isSelected && <Check className="w-4 h-4" style={{ color: currentAccent.hex }} />}
+                      </div>
+                      <div>
+                        <span className="text-xs font-semibold text-ivory block">{tone.name}</span>
+                        <span className="text-[10px] font-mono text-sand-muted">Base: {tone.baseBg}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Border & Glow Styling Controls */}
+              <div className="pt-4 border-t border-white/[0.06] grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] uppercase tracking-wider text-sand-muted block mb-1.5 font-sans-body">
+                    Card Border Contrast
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.agency.companyName}
-                    onChange={(e) => handleAgencyChange('companyName', e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
-                    placeholder="e.g. Holiday Travelers Travel and Tours Inc"
-                  />
-                  <p className="text-[11px] text-slate-500 mt-1">Appears on official invoices, hotel vouchers, and tour passes.</p>
+                  <select
+                    value={formData.theme.borderStyle}
+                    onChange={(e) => handleThemeChange('borderStyle', e.target.value as ThemeBorderStyle)}
+                    className="w-full bg-[#070B0E] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-ivory focus:outline-none"
+                    style={{ borderColor: formData.theme.borderStyle === 'high-contrast' ? currentAccent.hex : undefined }}
+                  >
+                    <option value="subtle">Subtle Ambient (Standard)</option>
+                    <option value="high-contrast">High-Contrast Accent Wireframe</option>
+                    <option value="minimal">Ultra Minimalist Dark</option>
+                  </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Short Display Name
+                  <label className="text-[11px] uppercase tracking-wider text-sand-muted block mb-1.5 font-sans-body">
+                    Interface Font Scale
                   </label>
-                  <input
-                    type="text"
-                    value={formData.agency.shortName}
-                    onChange={(e) => handleAgencyChange('shortName', e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
-                    placeholder="e.g. Holiday Travelers"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    DOT Accreditation Number
-                  </label>
-                  <div className="relative">
-                    <ShieldCheck className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
-                    <input
-                      type="text"
-                      value={formData.agency.accreditationNo}
-                      onChange={(e) => handleAgencyChange('accreditationNo', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-3.5 py-2 text-sm text-white focus:outline-none focus:border-purple-500 font-mono"
-                      placeholder="DOT-ACCR-RO7-2026-8819"
-                    />
-                  </div>
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Company Tagline / Slogan
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.agency.tagline}
-                    onChange={(e) => handleAgencyChange('tagline', e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Official Contact Email
-                  </label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
-                    <input
-                      type="email"
-                      value={formData.agency.email}
-                      onChange={(e) => handleAgencyChange('email', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-3.5 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Hotline / Mobile Numbers
-                  </label>
-                  <div className="relative">
-                    <Phone className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
-                    <input
-                      type="text"
-                      value={formData.agency.phone}
-                      onChange={(e) => handleAgencyChange('phone', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-3.5 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Headquarters Address
-                  </label>
-                  <div className="relative">
-                    <MapPin className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
-                    <input
-                      type="text"
-                      value={formData.agency.address}
-                      onChange={(e) => handleAgencyChange('address', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-3.5 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Billing Currency Symbol
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.agency.currencySymbol}
-                    onChange={(e) => handleAgencyChange('currencySymbol', e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-purple-500 font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Default Required Deposit (%)
-                  </label>
-                  <input
-                    type="number"
-                    min="10"
-                    max="100"
-                    value={formData.agency.defaultDownpaymentPct}
-                    onChange={(e) => handleAgencyChange('defaultDownpaymentPct', Number(e.target.value))}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
-                  />
+                  <select
+                    value={formData.theme.fontSize}
+                    onChange={(e) => handleThemeChange('fontSize', e.target.value as ThemeFontSize)}
+                    className="w-full bg-[#070B0E] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-ivory focus:outline-none"
+                  >
+                    <option value="compact">Compact Density (92%)</option>
+                    <option value="standard">Standard Balance (100%)</option>
+                    <option value="large">Comfortable Legibility (106%)</option>
+                  </select>
                 </div>
               </div>
             </div>
-          )}
+          </div>
 
-          {/* SubTab 2: UI Theme Customization */}
-          {activeSubTab === 'theme' && (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <Palette className="w-5 h-5 text-cyan-400" />
-                  <span>Visual Theme & UI Personalization</span>
-                </h3>
+          {/* 3. Typography & Font Family Customizer */}
+          <div className="bg-[#0B1014] border border-white/[0.06] rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+            <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+              <div className="flex items-center gap-2">
+                <Type className="w-5 h-5" style={{ color: currentAccent.hex }} />
+                <h3 className="font-serif-display text-2xl text-ivory">Admin Panel Typography & Fonts</h3>
               </div>
-
-              {/* Color Scheme Picker */}
-              <div className="space-y-3">
-                <label className="block text-xs font-semibold text-slate-300">
-                  Primary Brand Accent Theme
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                  {[
-                    { id: 'cyan', name: 'Cyan Ocean', color: 'bg-cyan-500', border: 'border-cyan-500' },
-                    { id: 'amber', name: 'Amber Gold', color: 'bg-amber-500', border: 'border-amber-500' },
-                    { id: 'emerald', name: 'Emerald Mint', color: 'bg-emerald-500', border: 'border-emerald-500' },
-                    { id: 'indigo', name: 'Royal Indigo', color: 'bg-indigo-500', border: 'border-indigo-500' },
-                    { id: 'rose', name: 'Sunset Rose', color: 'bg-rose-500', border: 'border-rose-500' },
-                  ].map((scheme) => (
-                    <button
-                      key={scheme.id}
-                      type="button"
-                      onClick={() => handleThemeChange('colorScheme', scheme.id)}
-                      className={`p-3 rounded-xl border text-left transition flex flex-col items-center gap-2 ${
-                        formData.theme.colorScheme === scheme.id
-                          ? `${scheme.border} bg-slate-800 ring-2 ring-purple-500/50`
-                          : 'border-slate-800 bg-slate-950 hover:bg-slate-900'
-                      }`}
-                    >
-                      <div className={`w-6 h-6 rounded-full ${scheme.color} shadow-lg`} />
-                      <span className="text-xs font-semibold text-slate-200">{scheme.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Layout Density */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-800">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-2">
-                    Layout Density Mode
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleThemeChange('density', 'spacious')}
-                      className={`p-3 rounded-xl border text-xs font-semibold transition ${
-                        formData.theme.density === 'spacious'
-                          ? 'border-purple-500 bg-purple-500/10 text-purple-300'
-                          : 'border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      Spacious (Default)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleThemeChange('density', 'compact')}
-                      className={`p-3 rounded-xl border text-xs font-semibold transition ${
-                        formData.theme.density === 'compact'
-                          ? 'border-purple-500 bg-purple-500/10 text-purple-300'
-                          : 'border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      Compact High-Density
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-2">
-                    Visual Options
-                  </label>
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.theme.showBorders}
-                        onChange={(e) => handleThemeChange('showBorders', e.target.checked)}
-                        className="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-purple-500"
-                      />
-                      <span>Enable High-Contrast Card Borders</span>
-                    </label>
-                    <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.theme.enableAnimations}
-                        onChange={(e) => handleThemeChange('enableAnimations', e.target.checked)}
-                        className="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-purple-500"
-                      />
-                      <span>Enable Skeleton Shimmer & Page Animations</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* SubTab 3: Export & Backup */}
-          {activeSubTab === 'backup' && (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <Download className="w-5 h-5 text-emerald-400" />
-                  <span>Export & Portable Backup Tools</span>
-                </h3>
-              </div>
-
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Download a single plug-and-play JSON backup file containing your agency branding, contact credentials, and custom UI options to easily import into VS Code or share with colleagues.
-              </p>
-
-              <div className="flex flex-wrap gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={handleExportJson}
-                  className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-emerald-600/20 transition flex items-center gap-2"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Download Configuration Backup (.json)</span>
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Right Sidebar: Realtime Branding Preview */}
-        <div className="space-y-6">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4 sticky top-24">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
-                <Eye className="w-4 h-4 text-purple-400" />
-                <span>Live Branding Preview</span>
-              </h4>
-              <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-mono">
-                Realtime
+              <span className="text-xs text-sand-muted font-sans-body">
+                Custom font engine loaded via Google Fonts
               </span>
             </div>
 
-            {/* Sample Voucher / Header Box */}
-            <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+            {/* Display / Heading Font Grid */}
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
-                    HT
-                  </div>
-                  <div>
-                    <h5 className="text-xs font-bold text-white leading-tight">
-                      {formData.agency.companyName}
-                    </h5>
-                    <p className="text-[10px] text-purple-400 font-mono">
-                      {formData.agency.accreditationNo}
-                    </p>
-                  </div>
-                </div>
+                <span className="text-xs uppercase tracking-[0.2em] text-sand-muted font-medium">
+                  A. Heading & Title Display Font
+                </span>
+                <span className="text-xs font-mono text-ivory" style={{ color: currentAccent.hex }}>
+                  Active: {currentDisplayFont.name} ({currentDisplayFont.category})
+                </span>
               </div>
 
-              <div className="pt-3 border-t border-slate-800/80 space-y-1.5 text-[11px] text-slate-300">
-                <div className="flex items-center gap-1.5 text-slate-400">
-                  <Phone className="w-3 h-3 text-purple-400 shrink-0" />
-                  <span className="truncate">{formData.agency.phone}</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-slate-400">
-                  <Mail className="w-3 h-3 text-purple-400 shrink-0" />
-                  <span className="truncate">{formData.agency.email}</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-slate-400">
-                  <MapPin className="w-3 h-3 text-purple-400 shrink-0" />
-                  <span className="truncate">{formData.agency.address}</span>
-                </div>
-              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                {(Object.keys(DISPLAY_FONTS) as ThemeFontDisplay[]).map((key) => {
+                  const font = DISPLAY_FONTS[key];
+                  const isSelected = formData.theme.fontDisplay === key;
 
-              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
-                <span className="text-slate-400">Default Currency:</span>
-                <span className="font-mono font-bold text-emerald-400">{formData.agency.currencySymbol} PHP</span>
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => handleThemeChange('fontDisplay', key)}
+                      className={`p-4 rounded-xl border text-left transition-all relative flex flex-col justify-between group ${
+                        isSelected
+                          ? 'bg-white/[0.08] shadow-lg'
+                          : 'bg-[#070B0E] border-white/[0.06] hover:border-white/20 hover:bg-white/[0.03]'
+                      }`}
+                      style={isSelected ? { borderColor: currentAccent.hex } : {}}
+                    >
+                      <div className="space-y-1 mb-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-ivory group-hover:text-white">
+                            {font.name}
+                          </span>
+                          <span className="text-[10px] text-sand-muted font-sans-body">
+                            {font.category}
+                          </span>
+                        </div>
+                        <div 
+                          className="text-lg text-ivory py-1 line-clamp-1 font-light"
+                          style={{ fontFamily: font.family }}
+                        >
+                          {font.previewSample}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-white/[0.06] text-[10px]">
+                        <span className="font-mono text-sand-muted">{font.id}</span>
+                        {isSelected ? (
+                          <span className="font-semibold uppercase tracking-wider flex items-center gap-1" style={{ color: currentAccent.hex }}>
+                            <Check className="w-3 h-3" /> Selected
+                          </span>
+                        ) : (
+                          <span className="text-sand-muted group-hover:text-ivory">Apply Font →</span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            <div className="bg-purple-950/30 border border-purple-500/20 rounded-xl p-3 text-[11px] text-purple-300 leading-relaxed">
-              <Sparkles className="w-4 h-4 text-purple-400 mb-1" />
-              Changes saved here update across all 6 capstone submodules, including customer booking receipts, hotel vouchers, and printable invoices.
+            {/* Body / Interface Font Grid */}
+            <div className="space-y-3 pt-6 border-t border-white/[0.06]">
+              <div className="flex items-center justify-between">
+                <span className="text-xs uppercase tracking-[0.2em] text-sand-muted font-medium">
+                  B. Body & Navigation Interface Font
+                </span>
+                <span className="text-xs font-mono text-ivory" style={{ color: currentAccent.hex }}>
+                  Active: {currentBodyFont.name} ({currentBodyFont.category})
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                {(Object.keys(BODY_FONTS) as ThemeFontBody[]).map((key) => {
+                  const font = BODY_FONTS[key];
+                  const isSelected = formData.theme.fontBody === key;
+
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => handleThemeChange('fontBody', key)}
+                      className={`p-4 rounded-xl border text-left transition-all relative flex flex-col justify-between group ${
+                        isSelected
+                          ? 'bg-white/[0.08] shadow-lg'
+                          : 'bg-[#070B0E] border-white/[0.06] hover:border-white/20 hover:bg-white/[0.03]'
+                      }`}
+                      style={isSelected ? { borderColor: currentAccent.hex } : {}}
+                    >
+                      <div className="space-y-1 mb-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-ivory group-hover:text-white">
+                            {font.name}
+                          </span>
+                          <span className="text-[10px] text-sand-muted font-sans-body">
+                            {font.category}
+                          </span>
+                        </div>
+                        <p 
+                          className="text-xs text-sand-muted/90 py-1 line-clamp-2 leading-relaxed"
+                          style={{ fontFamily: font.family }}
+                        >
+                          {font.previewSample}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-white/[0.06] text-[10px]">
+                        <span className="font-mono text-sand-muted">{font.id}</span>
+                        {isSelected ? (
+                          <span className="font-semibold uppercase tracking-wider flex items-center gap-1" style={{ color: currentAccent.hex }}>
+                            <Check className="w-3 h-3" /> Selected
+                          </span>
+                        ) : (
+                          <span className="text-sand-muted group-hover:text-ivory">Apply Font →</span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* 4. Live Interactive Component Sandbox Preview Card */}
+          <div className="bg-[#0B1014] border border-white/[0.08] rounded-2xl p-6 sm:p-8 shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+              <div className="flex items-center gap-2">
+                <Eye className="w-4 h-4" style={{ color: currentAccent.hex }} />
+                <h3 className="font-serif-display text-2xl text-ivory">Live Interactive Admin Component Preview</h3>
+              </div>
+              <span className="text-xs font-mono px-2.5 py-0.5 rounded-full" style={{ backgroundColor: `${currentAccent.hex}22`, color: currentAccent.hex }}>
+                Live Sandbox
+              </span>
+            </div>
+
+            <div 
+              className="p-6 rounded-xl border transition-all duration-300 space-y-6"
+              style={{
+                backgroundColor: currentBgTone.cardBg,
+                borderColor: formData.theme.borderStyle === 'high-contrast' ? `${currentAccent.hex}55` : currentBgTone.borderRgba,
+              }}
+            >
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span 
+                      className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold uppercase tracking-wider"
+                      style={{ backgroundColor: `${currentAccent.hex}25`, color: currentAccent.hex }}
+                    >
+                      Expedition Active
+                    </span>
+                    <span className="text-xs text-sand-muted font-sans-body">HT-EXP-2026-981</span>
+                  </div>
+                  <h4 
+                    className="text-2xl sm:text-3xl text-ivory font-light"
+                    style={{ fontFamily: currentDisplayFont.family }}
+                  >
+                    Coron Secret Lagoons & Kayangan Reef Expedition
+                  </h4>
+                </div>
+
+                <div className="text-right">
+                  <span className="text-[10px] uppercase tracking-wider text-sand-muted block font-sans-body">Total Fare</span>
+                  <span 
+                    className="text-2xl sm:text-3xl font-semibold text-ivory"
+                    style={{ fontFamily: currentDisplayFont.family }}
+                  >
+                    ₱38,500
+                  </span>
+                </div>
+              </div>
+
+              <p 
+                className="text-xs text-sand-muted leading-relaxed"
+                style={{ fontFamily: currentBodyFont.family }}
+              >
+                Passenger manifest verified for 4 guests. Twin-engine private speedboat and licensed tour guide ready for departure at Station 1 Pier. All environmental fees settled.
+              </p>
+
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-white/[0.06]">
+                <div className="flex items-center gap-2">
+                  <button 
+                    style={{ backgroundColor: currentAccent.hex }}
+                    className="px-5 py-2 rounded-full text-xs font-semibold text-white tracking-wider shadow-lg hover:brightness-110 transition"
+                  >
+                    Dispatch Expedition
+                  </button>
+                  <button className="px-4 py-2 rounded-full text-xs text-sand-muted hover:text-ivory bg-white/[0.04] border border-white/[0.08] transition">
+                    View Manifest
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs font-mono text-sand-muted">
+                  <span>Display: <strong className="text-ivory">{currentDisplayFont.name}</strong></span>
+                  <span>•</span>
+                  <span>Body: <strong className="text-ivory">{currentBodyFont.name}</strong></span>
+                  <span>•</span>
+                  <span>Accent: <strong style={{ color: currentAccent.hex }}>{currentAccent.name}</strong></span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </form>
+      )}
+
+      {/* ========================================================================= */}
+      {/* SUBTAB 2: AGENCY INFO & ACCREDITATION                                     */}
+      {/* ========================================================================= */}
+      {activeSubTab === 'agency' && (
+        <form onSubmit={handleSave} className="bg-[#0B1014] border border-white/[0.06] rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl">
+          <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+            <h3 className="font-serif-display text-2xl text-ivory">
+              Agency Registered Identity & DOT Accreditations
+            </h3>
+            <span className="text-xs text-sand-muted font-sans-body">Official Tourist Enterprise Data</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label className="block text-xs font-sans-body uppercase tracking-wider text-sand-muted mb-1.5">
+                Company Legal Name
+              </label>
+              <input
+                type="text"
+                value={formData.agency.companyName}
+                onChange={(e) => handleAgencyChange('companyName', e.target.value)}
+                className="w-full bg-[#070B0E] border border-white/[0.08] rounded-xl px-4 py-2.5 text-xs text-ivory focus:outline-none focus:border-sunset-coral"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-sans-body uppercase tracking-wider text-sand-muted mb-1.5">
+                DOT Accreditation Number
+              </label>
+              <input
+                type="text"
+                value={formData.agency.accreditationNo}
+                onChange={(e) => handleAgencyChange('accreditationNo', e.target.value)}
+                className="w-full bg-[#070B0E] border border-white/[0.08] rounded-xl px-4 py-2.5 text-xs font-mono font-bold focus:outline-none"
+                style={{ color: currentAccent.hex }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-sans-body uppercase tracking-wider text-sand-muted mb-1.5">
+                Official Hotline Phone
+              </label>
+              <input
+                type="text"
+                value={formData.agency.phone}
+                onChange={(e) => handleAgencyChange('phone', e.target.value)}
+                className="w-full bg-[#070B0E] border border-white/[0.08] rounded-xl px-4 py-2.5 text-xs text-ivory focus:outline-none focus:border-sunset-coral"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-sans-body uppercase tracking-wider text-sand-muted mb-1.5">
+                Support & Inquiries Email
+              </label>
+              <input
+                type="email"
+                value={formData.agency.email}
+                onChange={(e) => handleAgencyChange('email', e.target.value)}
+                className="w-full bg-[#070B0E] border border-white/[0.08] rounded-xl px-4 py-2.5 text-xs text-ivory focus:outline-none focus:border-sunset-coral"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-sans-body uppercase tracking-wider text-sand-muted mb-1.5">
+                Brand Tagline
+              </label>
+              <input
+                type="text"
+                value={formData.agency.tagline}
+                onChange={(e) => handleAgencyChange('tagline', e.target.value)}
+                className="w-full bg-[#070B0E] border border-white/[0.08] rounded-xl px-4 py-2.5 text-xs text-ivory focus:outline-none focus:border-sunset-coral"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-sans-body uppercase tracking-wider text-sand-muted mb-1.5">
+                Default Downpayment Requirement (%)
+              </label>
+              <input
+                type="number"
+                min={10}
+                max={100}
+                value={formData.agency.defaultDownpaymentPct}
+                onChange={(e) => handleAgencyChange('defaultDownpaymentPct', Number(e.target.value))}
+                className="w-full bg-[#070B0E] border border-white/[0.08] rounded-xl px-4 py-2.5 text-xs text-ivory focus:outline-none focus:border-sunset-coral"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-xs font-sans-body uppercase tracking-wider text-sand-muted mb-1.5">
+                Headquarters Physical Address
+              </label>
+              <input
+                type="text"
+                value={formData.agency.address}
+                onChange={(e) => handleAgencyChange('address', e.target.value)}
+                className="w-full bg-[#070B0E] border border-white/[0.08] rounded-xl px-4 py-2.5 text-xs text-ivory focus:outline-none focus:border-sunset-coral"
+              />
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-white/[0.08] flex justify-end">
+            <button
+              type="submit"
+              style={{ backgroundColor: currentAccent.hex }}
+              className="px-6 py-2.5 rounded-full text-xs font-semibold text-white tracking-wider shadow-lg hover:brightness-110 transition"
+            >
+              Update Agency Profile
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* ========================================================================= */}
+      {/* SUBTAB 3: BACKUP & DATA EXPORT                                            */}
+      {/* ========================================================================= */}
+      {activeSubTab === 'backup' && (
+        <div className="bg-[#0B1014] border border-white/[0.06] rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl">
+          <div className="space-y-2">
+            <h3 className="font-serif-display text-2xl text-ivory">Data Backup & JSON Configuration Export</h3>
+            <p className="text-xs text-sand-muted font-light leading-relaxed max-w-2xl">
+              Export system configuration, package catalog schema, and theme customizations as an offline JSON snapshot file for disaster recovery or testing.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-xl bg-[#070B0E] border border-white/[0.06] space-y-3">
+            <span className="text-xs font-mono text-sand-muted block">Current Settings Payload Snapshot:</span>
+            <pre className="text-[11px] font-mono text-emerald-400 bg-black/60 p-4 rounded-lg overflow-x-auto max-h-60 border border-white/5">
+              {JSON.stringify(formData, null, 2)}
+            </pre>
+          </div>
+
+          <div>
+            <button
+              onClick={handleExportJson}
+              style={{ backgroundColor: currentAccent.hex }}
+              className="px-6 py-3 text-white text-xs font-semibold tracking-wider rounded-full shadow-lg hover:brightness-110 transition flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              <span>Download System Configuration JSON</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

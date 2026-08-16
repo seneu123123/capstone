@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TourPackage } from '../../types';
-import { Clock, Star, ArrowUpRight, Check, Compass } from 'lucide-react';
+import { Clock, Star, ArrowUpRight, Check, Compass, Eye, X, MapPin, Calendar } from 'lucide-react';
 
 interface ClientExpeditionsProps {
   packages: TourPackage[];
@@ -12,6 +12,7 @@ export const ClientExpeditions: React.FC<ClientExpeditionsProps> = ({
   onSelectPackage,
 }) => {
   const [selectedFilter, setSelectedFilter] = useState<string>('All');
+  const [modalPackage, setModalPackage] = useState<TourPackage | null>(null);
 
   const activePackages = packages.filter((p) => p.status === 'Active');
 
@@ -61,14 +62,21 @@ export const ClientExpeditions: React.FC<ClientExpeditionsProps> = ({
         {/* 2-Column Dark Luxury Journey Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
           {filteredPackages.map((pkg, idx) => {
-            // Curate visual assets for cards
+            const localFallbacks = [
+              '/images/pac1.webp',
+              '/images/bohol.jpg',
+              '/images/pac2.avif',
+              '/images/pac3.jpg',
+              '/images/palawan_paradise.svg',
+              '/images/siargao_surf.svg'
+            ];
             const fallbackImages = [
               'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=1200&q=80',
               'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
               'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=1200&q=80',
               'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
             ];
-            const displayImage = pkg.bannerUrl || fallbackImages[idx % fallbackImages.length];
+            const displayImage = pkg.bannerUrl || localFallbacks[idx % localFallbacks.length];
 
             const price = pkg.pricePerPax ?? (pkg as any).price_per_pax ?? 0;
             const days = pkg.durationDays ?? (pkg as any).duration_days ?? 1;
@@ -81,11 +89,17 @@ export const ClientExpeditions: React.FC<ClientExpeditionsProps> = ({
                 className="group relative bg-[#0B1014] rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/20 transition-all duration-500 flex flex-col justify-between"
               >
                 {/* Image Banner Container */}
-                <div className="relative aspect-[16/10] overflow-hidden bg-black/40">
+                <div 
+                  onClick={() => setModalPackage(pkg)}
+                  className="relative aspect-[16/10] overflow-hidden bg-black/40 cursor-pointer"
+                >
                   <img
                     src={displayImage}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = fallbackImages[idx % fallbackImages.length];
+                    }}
                     alt={pkg.title}
-                    className="w-full h-full object-cover img-editorial-card"
+                    className="w-full h-full object-cover img-editorial-card group-hover:scale-105 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0B1014] via-[#0B1014]/20 to-transparent pointer-events-none" />
 
@@ -122,7 +136,10 @@ export const ClientExpeditions: React.FC<ClientExpeditionsProps> = ({
                     </div>
 
                     {/* Expedition Title */}
-                    <h3 className="font-serif-display text-2xl sm:text-3xl font-normal text-ivory group-hover:text-white transition-colors leading-tight">
+                    <h3 
+                      onClick={() => setModalPackage(pkg)}
+                      className="font-serif-display text-2xl sm:text-3xl font-normal text-ivory group-hover:text-white transition-colors leading-tight cursor-pointer"
+                    >
                       {pkg.title}
                     </h3>
 
@@ -142,27 +159,42 @@ export const ClientExpeditions: React.FC<ClientExpeditionsProps> = ({
                   </div>
 
                   {/* Pricing and Action Footer */}
-                  <div className="pt-6 border-t border-white/[0.06] flex items-end justify-between gap-4">
-                    <div>
-                      <p className="text-[11px] font-sans-body tracking-[0.2em] uppercase text-sand-muted">
-                        From
-                      </p>
-                      <p className="font-serif-display text-2xl sm:text-3xl text-ivory">
-                        ₱{Number(price).toLocaleString()}{' '}
-                        <span className="text-xs font-sans-body text-sand-muted font-light">
+                  <div className="pt-6 border-t border-white/[0.06] flex items-center justify-between gap-4">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-sans-body tracking-[0.2em] uppercase text-sunset-coral font-medium">
+                          All-Inclusive Rate
+                        </span>
+                      </div>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="font-serif-display text-2xl sm:text-3xl font-semibold text-ivory tracking-tight">
+                          ₱{Number(price).toLocaleString()}
+                        </span>
+                        <span className="text-xs font-sans-body text-sand-muted font-normal">
                           / person
                         </span>
-                      </p>
+                      </div>
                     </div>
 
-                    <button
-                      onClick={() => onSelectPackage(pkg)}
-                      className="group/btn flex items-center gap-2 bg-white/[0.06] hover:bg-sunset-coral text-ivory hover:text-white px-5 py-2.5 rounded-full text-xs font-medium tracking-wider transition-all duration-300 border border-white/10 hover:border-sunset-coral"
-                      id={`reserve-pkg-${pkg.id}`}
-                    >
-                      <span>Reserve</span>
-                      <ArrowUpRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setModalPackage(pkg)}
+                        className="px-4 py-2.5 rounded-full text-xs font-medium text-sand-muted hover:text-ivory bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 transition-all flex items-center gap-1.5"
+                        title="View Detailed Itinerary"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-sunset-coral" />
+                        <span className="hidden sm:inline">Details</span>
+                      </button>
+
+                      <button
+                        onClick={() => onSelectPackage(pkg)}
+                        className="group/btn relative flex items-center gap-2 bg-sunset-coral hover:bg-[#ff765b] text-white px-6 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-300 shadow-xl shadow-sunset-coral/25 hover:shadow-sunset-coral/45 hover:scale-[1.03] active:scale-[0.98] border border-white/10"
+                        id={`reserve-pkg-${pkg.id}`}
+                      >
+                        <span>Reserve</span>
+                        <ArrowUpRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -170,6 +202,107 @@ export const ClientExpeditions: React.FC<ClientExpeditionsProps> = ({
           })}
         </div>
       </div>
+
+      {/* Expedition Details Modal */}
+      {modalPackage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
+          <div className="bg-[#0B1014] border border-white/10 rounded-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 shadow-2xl my-8 relative">
+            <button
+              onClick={() => setModalPackage(null)}
+              className="absolute top-4 right-4 p-2 rounded-full text-sand-muted hover:text-ivory hover:bg-white/5 transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="space-y-2">
+              <span className="text-xs font-sans-body tracking-[0.25em] uppercase text-sunset-coral font-medium">
+                {modalPackage.category} · {modalPackage.destination}
+              </span>
+              <h2 className="font-serif-display text-3xl sm:text-4xl text-ivory">
+                {modalPackage.title}
+              </h2>
+              <div className="flex items-center gap-4 text-xs text-sand-muted font-light pt-1">
+                <span>{modalPackage.durationDays} Days / {modalPackage.durationNights} Nights</span>
+                <span>·</span>
+                <span className="text-sunset-coral font-mono font-bold text-sm">₱{Number(modalPackage.pricePerPax).toLocaleString()} / Pax</span>
+              </div>
+            </div>
+
+            {/* Inclusions */}
+            {modalPackage.inclusions && modalPackage.inclusions.length > 0 && (
+              <div className="space-y-3 pt-4 border-t border-white/[0.06]">
+                <h4 className="text-xs font-sans-body uppercase tracking-wider text-ivory font-medium">
+                  What's Included in this Expedition
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {modalPackage.inclusions.map((inc, i) => (
+                    <div key={i} className="flex items-center gap-2 text-xs text-sand-muted font-light bg-[#070B0E] p-2.5 rounded-xl border border-white/[0.04]">
+                      <Check className="w-3.5 h-3.5 text-sunset-coral shrink-0" />
+                      <span>{inc}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Daily Itinerary */}
+            {modalPackage.itinerary && modalPackage.itinerary.length > 0 && (
+              <div className="space-y-4 pt-4 border-t border-white/[0.06]">
+                <h4 className="text-xs font-sans-body uppercase tracking-wider text-ivory font-medium">
+                  Day-by-Day Journey Schedule
+                </h4>
+                <div className="space-y-4 max-h-60 overflow-y-auto pr-2">
+                  {modalPackage.itinerary.map((day) => (
+                    <div key={day.dayNumber} className="bg-[#070B0E] p-4 rounded-xl border border-white/[0.04] space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-serif-display text-lg text-ivory">
+                          Day {day.dayNumber}: {day.title}
+                        </span>
+                        <span className="text-[11px] text-sand-muted">{day.meals}</span>
+                      </div>
+                      <p className="text-xs text-sand-muted font-light leading-relaxed">
+                        {day.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Modal Action Footer */}
+            <div className="pt-6 border-t border-white/[0.06] flex items-center justify-between gap-4">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-sans-body tracking-[0.2em] uppercase text-sunset-coral font-medium block">
+                  Total Rate per Pax
+                </span>
+                <span className="font-serif-display text-2xl sm:text-3xl text-ivory font-normal">
+                  ₱{(modalPackage.pricePerPax ?? (modalPackage as any).price_per_pax ?? 0).toLocaleString()}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setModalPackage(null)}
+                  className="px-5 py-2.5 rounded-full text-xs text-sand-muted hover:text-ivory bg-white/[0.04] hover:bg-white/[0.08] transition"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    const pkgToBook = modalPackage;
+                    setModalPackage(null);
+                    onSelectPackage(pkgToBook);
+                  }}
+                  className="group inline-flex items-center justify-center gap-2 bg-sunset-coral hover:bg-[#ff765b] text-white px-7 py-3 rounded-full text-xs font-semibold tracking-[0.15em] uppercase shadow-2xl shadow-sunset-coral/30 hover:shadow-sunset-coral/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 border border-white/10"
+                >
+                  <span>Book Expedition</span>
+                  <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

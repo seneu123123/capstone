@@ -92,7 +92,7 @@ export const INITIAL_TOUR_PACKAGES: TourPackage[] = [
     featured: true,
     rating: 4.8,
     reviewCount: 24,
-    bannerUrl: '/images/bohol_wonders.svg',
+    bannerUrl: '/images/bohol.jpg',
     inclusions: [
       '2-Night Resort Accommodation at Panglao Island',
       'Loboc River Cruise Buffet Lunch with Live Cultural Music',

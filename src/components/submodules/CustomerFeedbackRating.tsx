@@ -12,7 +12,9 @@ import {
   Plus, 
   X,
   Sparkles,
-  BarChart3
+  BarChart3,
+  Compass,
+  ArrowUpRight
 } from 'lucide-react';
 
 interface CustomerFeedbackRatingProps {
@@ -52,15 +54,15 @@ export const CustomerFeedbackRating: React.FC<CustomerFeedbackRatingProps> = ({
     const newFeedback: CustomerFeedback = {
       id: `fb-${Date.now()}`,
       bookingRef: selectedBookingRef,
-      customerName: relatedBooking ? relatedBooking.customer.fullName : 'Valued Tourist',
-      tourTitle: relatedBooking ? relatedBooking.tourTitle : 'Travel Tour Package',
+      customerName: relatedBooking ? relatedBooking.customer.fullName : 'Valued Traveler',
+      tourTitle: relatedBooking ? relatedBooking.tourTitle : 'Island Expedition',
       date: new Date().toISOString().split('T')[0],
       overallRating: overallRating,
       guideRating: guideRating,
       hotelRating: hotelRating,
       transportRating: transportRating,
       valueRating: valueRating,
-      comment: comment || 'Wonderful experience!',
+      comment: comment || 'An extraordinary journey through the Philippine archipelago.',
       recommendationScore: npsScore,
       status: 'Approved'
     };
@@ -70,143 +72,137 @@ export const CustomerFeedbackRating: React.FC<CustomerFeedbackRatingProps> = ({
     setComment('');
   };
 
-  const renderStars = (rating: number, onSelect?: (r: number) => void) => {
-    return (
-      <div className="flex items-center gap-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            onClick={() => onSelect && onSelect(star)}
-            className={`w-4 h-4 ${
-              star <= rating
-                ? 'fill-amber-400 text-amber-400'
-                : 'text-slate-700'
-            } ${onSelect ? 'cursor-pointer hover:scale-110 transition' : ''}`}
-          />
-        ))}
-      </div>
-    );
-  };
-
   return (
-    <div className="space-y-6">
-      {/* Submodule Banner */}
-      <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+    <div className="space-y-8">
+      {/* Submodule Header */}
+      <div className="bg-[#0B1014] border border-white/[0.08] rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-amber-400 text-xs font-semibold uppercase tracking-wider mb-1">
-              <Star className="w-4 h-4 fill-amber-400" />
-              <span>Submodule 06</span>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sunset-coral text-xs font-sans-body tracking-[0.25em] uppercase font-medium">
+              <Star className="w-4 h-4" />
+              <span>Customer Feedback & CSAT</span>
             </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">
-              Customer Feedback & Rating System
+            <h1 className="font-serif-display text-3xl sm:text-4xl font-light text-ivory tracking-wide">
+              Customer Feedback & CSAT Moderation
             </h1>
-            <p className="text-sm text-slate-400 mt-1 max-w-2xl">
-              Post-tour rating submissions, multi-criteria evaluations (tour guide, hotel, transport, value for money), and CSAT analytics.
+            <p className="text-xs sm:text-sm text-sand-muted max-w-2xl font-light leading-relaxed">
+              Measure post-expedition customer satisfaction (CSAT), track Net Promoter Scores (NPS), and curate guest reviews for public display.
             </p>
           </div>
 
           <button
             onClick={() => setIsSubmitModalOpen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition group shrink-0"
+            className="flex items-center gap-2 px-5 py-2.5 bg-sunset-coral hover:bg-[#D95339] text-white text-xs font-medium tracking-wider rounded-full shadow-lg shadow-sunset-coral/20 transition"
           >
             <Plus className="w-4 h-4" />
-            <span>Submit Tour Review</span>
+            <span>Submit Guest Review</span>
           </button>
         </div>
 
-        {/* Feedback Analytics Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-5 border-t border-slate-800">
-          <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-            <span className="text-[10px] font-bold text-slate-400 uppercase block">Overall Tour CSAT</span>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-2xl font-black text-amber-400">{avgOverall}</span>
-              <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
+        {/* CSAT Metric Row */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/[0.08]">
+          <div className="bg-[#070B0E] p-4 rounded-xl border border-white/[0.06] text-center space-y-1">
+            <span className="text-[10px] uppercase tracking-wider text-sand-muted font-sans-body">Overall CSAT</span>
+            <div className="font-serif-display text-3xl text-amber-400 flex items-center justify-center gap-1">
+              <span>{avgOverall}</span>
+              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
             </div>
           </div>
 
-          <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-            <span className="text-[10px] font-bold text-slate-400 uppercase block">Tour Guide Rating</span>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-2xl font-black text-cyan-400">{avgGuide}</span>
-              <span className="text-xs text-slate-400">/ 5.0</span>
+          <div className="bg-[#070B0E] p-4 rounded-xl border border-white/[0.06] text-center space-y-1">
+            <span className="text-[10px] uppercase tracking-wider text-sand-muted font-sans-body">Tour Guides</span>
+            <div className="font-serif-display text-3xl text-ivory flex items-center justify-center gap-1">
+              <span>{avgGuide}</span>
+              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
             </div>
           </div>
 
-          <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-            <span className="text-[10px] font-bold text-slate-400 uppercase block">Hotel Stay Rating</span>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-2xl font-black text-indigo-400">{avgHotel}</span>
-              <span className="text-xs text-slate-400">/ 5.0</span>
+          <div className="bg-[#070B0E] p-4 rounded-xl border border-white/[0.06] text-center space-y-1">
+            <span className="text-[10px] uppercase tracking-wider text-sand-muted font-sans-body">Resort Stay</span>
+            <div className="font-serif-display text-3xl text-ivory flex items-center justify-center gap-1">
+              <span>{avgHotel}</span>
+              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
             </div>
           </div>
 
-          <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-            <span className="text-[10px] font-bold text-slate-400 uppercase block">Transport Rating</span>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-2xl font-black text-emerald-400">{avgTransport}</span>
-              <span className="text-xs text-slate-400">/ 5.0</span>
+          <div className="bg-[#070B0E] p-4 rounded-xl border border-white/[0.06] text-center space-y-1">
+            <span className="text-[10px] uppercase tracking-wider text-sand-muted font-sans-body">Transport</span>
+            <div className="font-serif-display text-3xl text-ivory flex items-center justify-center gap-1">
+              <span>{avgTransport}</span>
+              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Customer Reviews Feed */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-        <h2 className="text-lg font-bold text-white flex items-center gap-2">
-          <MessageSquare className="w-5 h-5 text-amber-400" />
-          <span>Verified Customer Reviews & Testimonials</span>
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {feedbacks.map((fb) => (
-            <div key={fb.id} className="bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="font-bold text-white text-sm">{fb.customerName}</div>
-                  <span className="text-[11px] text-cyan-400 font-medium">{fb.tourTitle}</span>
+      {/* Feedbacks Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {feedbacks.map((fb) => (
+          <div
+            key={fb.id}
+            className="bg-[#0B1014] border border-white/[0.06] hover:border-white/20 rounded-2xl p-6 shadow-xl space-y-4 flex flex-col justify-between"
+          >
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-3.5 h-3.5 ${
+                        i < fb.overallRating
+                          ? 'fill-amber-400 text-amber-400'
+                          : 'text-white/10'
+                      }`}
+                    />
+                  ))}
                 </div>
-                <div className="text-right">
-                  {renderStars(fb.overallRating)}
-                  <span className="text-[10px] text-slate-500 block mt-0.5">{fb.date}</span>
-                </div>
+                <span className="text-[10px] font-mono text-sand-muted">{fb.date}</span>
               </div>
 
-              <p className="text-xs text-slate-300 italic leading-relaxed bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+              <p className="text-xs text-sand-muted font-serif-display text-base text-ivory italic leading-relaxed">
                 "{fb.comment}"
               </p>
-
-              <div className="grid grid-cols-3 gap-2 text-[10px] text-slate-400 pt-2 border-t border-slate-800">
-                <div>Guide: <strong className="text-slate-200">{fb.guideRating}/5</strong></div>
-                <div>Hotel: <strong className="text-slate-200">{fb.hotelRating}/5</strong></div>
-                <div>Transport: <strong className="text-slate-200">{fb.transportRating}/5</strong></div>
-              </div>
             </div>
-          ))}
-        </div>
+
+            <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs">
+              <div>
+                <span className="text-ivory font-medium block">{fb.customerName}</span>
+                <span className="text-[11px] text-sunset-coral font-light">{fb.tourTitle}</span>
+              </div>
+              <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/30">
+                Verified
+              </span>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Submit Review Modal */}
       {isSubmitModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 text-slate-100 shadow-2xl relative">
-            <button
-              onClick={() => setIsSubmitModalOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white p-2 rounded-lg"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <h2 className="text-base font-bold text-white mb-4">Submit Post-Tour Customer Feedback</h2>
-
-            <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#0B1014] border border-white/10 rounded-2xl max-w-lg w-full p-6 sm:p-8 space-y-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
               <div>
-                <label className="font-medium text-slate-300 block mb-1">Select Completed Booking Reference</label>
+                <span className="text-xs font-sans-body uppercase tracking-wider text-sunset-coral font-medium">
+                  Traveler Feedback
+                </span>
+                <h3 className="font-serif-display text-2xl text-ivory">Submit Tour Review</h3>
+              </div>
+              <button
+                onClick={() => setIsSubmitModalOpen(false)}
+                className="p-1.5 rounded-full text-sand-muted hover:text-ivory"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs uppercase text-sand-muted mb-1 font-sans-body">Booking Reference</label>
                 <select
                   value={selectedBookingRef}
                   onChange={(e) => setSelectedBookingRef(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"
+                  className="w-full bg-[#070B0E] border border-white/[0.08] rounded-xl px-4 py-2 text-xs text-ivory focus:outline-none focus:border-sunset-coral"
                 >
                   {bookings.map((b) => (
                     <option key={b.id} value={b.bookingRef}>
@@ -216,64 +212,51 @@ export const CustomerFeedbackRating: React.FC<CustomerFeedbackRatingProps> = ({
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
-                <div>
-                  <span className="text-slate-400 block mb-1">Overall Tour Experience</span>
-                  {renderStars(overallRating, setOverallRating)}
-                </div>
-                <div>
-                  <span className="text-slate-400 block mb-1">Tour Guide Service</span>
-                  {renderStars(guideRating, setGuideRating)}
-                </div>
-                <div>
-                  <span className="text-slate-400 block mb-1">Hotel & Stay</span>
-                  {renderStars(hotelRating, setHotelRating)}
-                </div>
-                <div>
-                  <span className="text-slate-400 block mb-1">Transport Comfort</span>
-                  {renderStars(transportRating, setTransportRating)}
+              <div>
+                <label className="block text-xs uppercase text-sand-muted mb-1.5 font-sans-body">Overall Rating</label>
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map((val) => (
+                    <button
+                      type="button"
+                      key={val}
+                      onClick={() => setOverallRating(val)}
+                      className={`p-2 rounded-lg border transition ${
+                        overallRating >= val
+                          ? 'bg-amber-400/20 border-amber-400 text-amber-400'
+                          : 'bg-[#070B0E] border-white/10 text-sand-muted'
+                      }`}
+                    >
+                      <Star className="w-4 h-4 fill-current" />
+                    </button>
+                  ))}
                 </div>
               </div>
 
               <div>
-                <label className="font-medium text-slate-300 block mb-1">Your Written Feedback / Review</label>
+                <label className="block text-xs uppercase text-sand-muted mb-1 font-sans-body">Your Impressions</label>
                 <textarea
                   rows={3}
                   required
-                  placeholder="Share your experience during the tour..."
+                  placeholder="Share your experience with the tour guide, boat captain, secret lagoons, and meals..."
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-amber-500"
+                  className="w-full bg-[#070B0E] border border-white/[0.08] rounded-xl px-4 py-2.5 text-xs text-ivory placeholder-sand-muted/50 focus:outline-none focus:border-sunset-coral"
                 />
               </div>
 
-              <div>
-                <label className="font-medium text-slate-300 block mb-1">
-                  How likely are you to recommend us to friends? (NPS: {npsScore}/10)
-                </label>
-                <input
-                  type="range"
-                  min={1}
-                  max={10}
-                  value={npsScore}
-                  onChange={(e) => setNpsScore(Number(e.target.value))}
-                  className="w-full accent-amber-500"
-                />
-              </div>
-
-              <div className="pt-3 flex justify-end gap-2">
+              <div className="pt-3 border-t border-white/[0.08] flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsSubmitModalOpen(false)}
-                  className="px-4 py-2 bg-slate-800 text-slate-200 text-xs rounded-xl"
+                  className="px-4 py-2 rounded-full text-xs text-sand-muted hover:text-ivory"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-amber-500/20"
+                  className="px-5 py-2 rounded-full text-xs font-medium bg-sunset-coral text-white shadow-lg shadow-sunset-coral/20"
                 >
-                  Post Feedback
+                  Post Review
                 </button>
               </div>
             </form>

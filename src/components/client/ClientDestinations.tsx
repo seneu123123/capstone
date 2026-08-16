@@ -8,6 +8,7 @@ interface DestinationItem {
   italicTagline: string;
   description: string;
   image: string;
+  fallbackImage: string;
 }
 
 const DESTINATIONS: DestinationItem[] = [
@@ -17,7 +18,8 @@ const DESTINATIONS: DestinationItem[] = [
     coordinates: '11.18° N / 119.38° E',
     italicTagline: 'Cathedrals of stone rising from jade water',
     description: 'Towering karst cliffs cradle hidden lagoons you reach only by kayak at dawn. Secret beaches where the only footsteps are yours.',
-    image: 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=1200&q=80'
+    image: '/images/elnido.jpg',
+    fallbackImage: 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=1200&q=80'
   },
   {
     region: 'SURIGAO DEL NORTE',
@@ -25,7 +27,8 @@ const DESTINATIONS: DestinationItem[] = [
     coordinates: '9.85° N / 126.05° E',
     italicTagline: 'Pacific swell and coconut canopies',
     description: 'Tear-drop island fringed by untouched mangrove waterways, emerald tidal pools at Magpupungko, and world-class breaks at Cloud 9.',
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'
+    image: '/images/siargao.jpg',
+    fallbackImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'
   },
   {
     region: 'CALAMIANES',
@@ -33,7 +36,17 @@ const DESTINATIONS: DestinationItem[] = [
     coordinates: '12.00° N / 120.20° E',
     italicTagline: 'Sunken ghost fleets and sacred lakes',
     description: 'Ancient Tagbanwa ancestral waters, thermal springs, and WWII shipwrecks blanketed in brilliant corals under turquoise glass.',
-    image: 'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=1200&q=80'
+    image: '/images/coron.webp',
+    fallbackImage: 'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=1200&q=80'
+  },
+  {
+    region: 'CENTRAL VISAYAS',
+    name: 'Bohol',
+    coordinates: '9.85° N / 124.14° E',
+    italicTagline: 'Chocolate mounds and ancient tarsier sanctuaries',
+    description: 'Iconic limestone hills shifting hues with the sun, serene emerald river cruises down Loboc, and dolphin sanctuaries off Balicasag.',
+    image: '/images/bohol.jpg',
+    fallbackImage: 'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=1200&q=80'
   }
 ];
 
@@ -61,7 +74,7 @@ export const ClientDestinations: React.FC<ClientDestinationsProps> = () => {
           </div>
           <div className="lg:col-span-4 lg:text-right">
             <p className="text-sand-muted text-sm sm:text-base font-sans-body max-w-sm ml-auto font-light leading-relaxed">
-              Three of our most-loved shores, mapped by the local seafarers who guide them.
+              Four of our most-loved shores, mapped by the local seafarers who guide them.
             </p>
           </div>
         </div>
@@ -85,6 +98,9 @@ export const ClientDestinations: React.FC<ClientDestinationsProps> = () => {
                   <div className="aspect-[16/10] overflow-hidden bg-obsidian-card">
                     <img
                       src={dest.image}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = dest.fallbackImage;
+                      }}
                       alt={dest.name}
                       className="w-full h-full object-cover img-editorial-card"
                     />

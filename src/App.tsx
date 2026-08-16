@@ -28,6 +28,7 @@ import { AdminNavbar } from './components/admin/AdminNavbar';
 import { AdminPortal } from './components/admin/AdminPortal';
 import { AdminLoginModal } from './components/admin/AdminLoginModal';
 import { SkeletonLoader } from './components/common/SkeletonLoader';
+import { applyAdminTheme } from './utils/theme';
 
 const DEFAULT_SETTINGS: AppSettings = {
   agency: {
@@ -42,9 +43,15 @@ const DEFAULT_SETTINGS: AppSettings = {
     defaultDownpaymentPct: 30
   },
   theme: {
-    colorScheme: 'cyan',
+    accentColor: 'coral',
+    fontDisplay: 'cormorant',
+    fontBody: 'jakarta',
+    bgTone: 'obsidian',
+    borderStyle: 'subtle',
+    fontSize: 'standard',
+    cardGlow: true,
+    colorScheme: 'coral',
     density: 'spacious',
-    bgTone: 'slate-950',
     showBorders: true,
     enableAnimations: true
   }
@@ -98,6 +105,22 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('holiday_travelers_settings', JSON.stringify(appSettings));
   }, [appSettings]);
+
+  useEffect(() => {
+    if (viewMode === 'operator') {
+      applyAdminTheme(appSettings.theme);
+    } else {
+      applyAdminTheme({
+        accentColor: 'coral',
+        fontDisplay: 'cormorant',
+        fontBody: 'jakarta',
+        bgTone: 'obsidian',
+        borderStyle: 'subtle',
+        fontSize: 'standard',
+        cardGlow: true,
+      });
+    }
+  }, [appSettings.theme, viewMode]);
 
   useEffect(() => {
     localStorage.setItem('holiday_view_mode', viewMode);
@@ -299,7 +322,10 @@ export default function App() {
         /* ========================================================================= */
         /* MODE 2: ISOLATED ADMIN TOUR OPERATIONS ENTERPRISE PORTAL                  */
         /* ========================================================================= */
-        <div className="min-h-screen bg-slate-950 flex flex-col">
+        <div 
+          className="min-h-screen admin-theme-wrapper flex flex-col transition-colors duration-300"
+          style={{ backgroundColor: 'var(--admin-bg-base, #070B0E)' }}
+        >
           <AdminNavbar
             activeTab={adminTab}
             onTabChange={handleAdminTabChange}
@@ -340,29 +366,33 @@ export default function App() {
             )}
           </main>
 
-          <footer className="border-t border-slate-900 bg-slate-950 py-5 text-xs text-slate-500">
+          <footer 
+            className="border-t border-white/[0.06] py-5 text-xs text-sand-muted transition-colors duration-300"
+            style={{ backgroundColor: 'var(--admin-bg-base, #070B0E)' }}
+          >
             <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
-                <strong>{appSettings.agency.companyName}</strong> — Operator Command Center ({appSettings.agency.accreditationNo})
+                <strong className="text-ivory">{appSettings.agency.companyName}</strong> — Operator Command Center ({appSettings.agency.accreditationNo})
               </div>
-              <div className="flex items-center gap-3 text-[11px] text-slate-400">
+              <div className="flex items-center gap-3 text-[11px] text-sand-muted">
                 <button
                   onClick={() => setIsCapstoneModalOpen(true)}
-                  className="text-cyan-400 hover:underline"
+                  className="hover:text-ivory transition-colors"
+                  style={{ color: 'var(--admin-accent, #F26A4F)' }}
                 >
                   System Specs
                 </button>
                 <span>•</span>
                 <button
                   onClick={() => setViewMode('customer')}
-                  className="text-sunset-coral hover:underline"
+                  className="text-sand-muted hover:text-ivory transition-colors"
                 >
                   Return to Public Website
                 </button>
                 <span>•</span>
                 <button
                   onClick={handleLogout}
-                  className="text-rose-400 hover:underline"
+                  className="text-rose-400 hover:underline transition-colors"
                 >
                   Sign Out
                 </button>

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { TourPackage, TourCategory, DayItinerary } from '../../types';
-import { ImageWithLoader } from '../common/ImageWithLoader';
 import { 
   Plus, 
   Search, 
@@ -18,7 +17,8 @@ import {
   Layers,
   Sparkles,
   Tag,
-  Star
+  Star,
+  ArrowUpRight
 } from 'lucide-react';
 
 interface TourPackageManagementProps {
@@ -55,7 +55,7 @@ export const TourPackageManagement: React.FC<TourPackageManagementProps> = ({
     pricePerPax: 5000,
     maxCapacity: 15,
     status: 'Active',
-    bannerUrl: 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=1200&q=80',
+    bannerUrl: '/images/elnido.jpg',
     inclusions: ['Hotel Stay', 'Tour Guide', 'Buffet Breakfast'],
     exclusions: ['Airfare', 'Personal Expenses'],
     itinerary: []
@@ -88,7 +88,7 @@ export const TourPackageManagement: React.FC<TourPackageManagementProps> = ({
       maxCapacity: 15,
       status: 'Active',
       featured: false,
-      bannerUrl: 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=1200&q=80',
+      bannerUrl: '/images/elnido.jpg',
       inclusions: ['3-Night Hotel Accommodation', 'Daily Breakfast', 'Guided Island Hopping Tour', 'Airport Van Transfers'],
       exclusions: ['Airfare tickets', 'Personal Expenses'],
       itinerary: [
@@ -98,33 +98,49 @@ export const TourPackageManagement: React.FC<TourPackageManagementProps> = ({
           description: 'Airport van pick-up and check-in to resort.',
           meals: 'Dinner included',
           activities: [
-            { time: '10:00 AM', activity: 'Airport Pick-up & Van Transfer' },
-            { time: '02:00 PM', activity: 'Hotel Check-in & Rest' }
-          ]
-        },
-        {
-          dayNumber: 2,
-          title: 'Full Day Sightseeing Tour',
-          description: 'Explore key spots and enjoy local seafood lunch.',
-          meals: 'Breakfast & Lunch',
-          activities: [
-            { time: '08:30 AM', activity: 'Departure for Main Tour' },
-            { time: '12:00 PM', activity: 'Seafood Picnic Lunch' }
+            { time: '14:00', activity: 'Airport Pick-up and Hotel Check-in' },
+            { time: '18:00', activity: 'Welcome Dinner with Cultural Overview' }
           ]
         }
       ]
     });
-    setInclusionInput('');
-    setExclusionInput('');
     setIsModalOpen(true);
   };
 
   const handleOpenEditModal = (pkg: TourPackage) => {
     setEditingId(pkg.id);
-    setFormData({ ...pkg });
-    setInclusionInput('');
-    setExclusionInput('');
+    setFormData({
+      ...pkg
+    });
     setIsModalOpen(true);
+  };
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.title || !formData.destination || !formData.pricePerPax) return;
+
+    const savedPackage: TourPackage = {
+      id: editingId || `pkg-${Date.now()}`,
+      code: formData.code || `PKG-00${packages.length + 1}`,
+      title: formData.title || '',
+      destination: formData.destination || '',
+      category: (formData.category as TourCategory) || 'Island Hopping',
+      durationDays: Number(formData.durationDays) || 1,
+      durationNights: Number(formData.durationNights) || 0,
+      pricePerPax: Number(formData.pricePerPax) || 0,
+      maxCapacity: Number(formData.maxCapacity) || 10,
+      status: formData.status || 'Active',
+      featured: formData.featured || false,
+      rating: formData.rating || 5.0,
+      reviewCount: formData.reviewCount || 1,
+      bannerUrl: formData.bannerUrl || '/images/elnido.jpg',
+      inclusions: formData.inclusions || [],
+      exclusions: formData.exclusions || [],
+      itinerary: formData.itinerary || []
+    };
+
+    onSavePackage(savedPackage);
+    setIsModalOpen(false);
   };
 
   const handleAddInclusion = () => {
@@ -136,10 +152,10 @@ export const TourPackageManagement: React.FC<TourPackageManagementProps> = ({
     setInclusionInput('');
   };
 
-  const handleRemoveInclusion = (index: number) => {
+  const handleRemoveInclusion = (idx: number) => {
     setFormData((prev) => ({
       ...prev,
-      inclusions: (prev.inclusions || []).filter((_, i) => i !== index)
+      inclusions: (prev.inclusions || []).filter((_, i) => i !== idx)
     }));
   };
 
@@ -152,96 +168,65 @@ export const TourPackageManagement: React.FC<TourPackageManagementProps> = ({
     setExclusionInput('');
   };
 
-  const handleRemoveExclusion = (index: number) => {
+  const handleRemoveExclusion = (idx: number) => {
     setFormData((prev) => ({
       ...prev,
-      exclusions: (prev.exclusions || []).filter((_, i) => i !== index)
+      exclusions: (prev.exclusions || []).filter((_, i) => i !== idx)
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.title || !formData.destination) {
-      alert('Please fill in the Package Title and Destination.');
-      return;
-    }
-
-    const newPackage: TourPackage = {
-      id: editingId || `pkg-${Date.now()}`,
-      code: formData.code || `PKG-${Date.now()}`,
-      title: formData.title || 'Untitled Tour Package',
-      destination: formData.destination || 'Destination',
-      category: (formData.category as TourCategory) || 'Island Hopping',
-      durationDays: Number(formData.durationDays) || 1,
-      durationNights: Number(formData.durationNights) || 0,
-      pricePerPax: Number(formData.pricePerPax) || 0,
-      maxCapacity: Number(formData.maxCapacity) || 10,
-      inclusions: formData.inclusions || [],
-      exclusions: formData.exclusions || [],
-      bannerUrl: formData.bannerUrl || 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=1200&q=80',
-      rating: formData.rating || 5.0,
-      reviewCount: formData.reviewCount || 0,
-      status: formData.status || 'Active',
-      featured: formData.featured || false,
-      itinerary: formData.itinerary || []
-    };
-
-    onSavePackage(newPackage);
-    setIsModalOpen(false);
-  };
-
   return (
-    <div className="space-y-6">
-      {/* Header & Submodule Title Banner */}
-      <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+    <div className="space-y-8">
+      {/* Submodule Header */}
+      <div className="bg-[#0B1014] border border-white/[0.08] rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-cyan-400 text-xs font-semibold uppercase tracking-wider mb-1">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sunset-coral text-xs font-sans-body tracking-[0.25em] uppercase font-medium">
               <Layers className="w-4 h-4" />
-              <span>Submodule 01</span>
+              <span>Tour Catalog & Packages</span>
             </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">
-              Tour Package Creation & Management
+            <h1 className="font-serif-display text-3xl sm:text-4xl font-light text-ivory tracking-wide">
+              Tour Package & Catalog Management
             </h1>
-            <p className="text-sm text-slate-400 mt-1 max-w-2xl">
-              Design, organize, set pricing, and publish tour packages with custom day-by-day itineraries and capacity settings.
+            <p className="text-xs sm:text-sm text-sand-muted max-w-2xl font-light leading-relaxed">
+              Maintain the tour catalog, establish pricing per pax, define detailed inclusions, set pax capacity, and publish new destinations.
             </p>
           </div>
 
           {isOperatorView && (
             <button
               onClick={handleOpenCreateModal}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-medium text-sm rounded-xl shadow-lg shadow-cyan-500/20 transition group shrink-0"
+              className="flex items-center gap-2 px-5 py-2.5 bg-sunset-coral hover:bg-[#D95339] text-white text-xs font-medium tracking-wider rounded-full shadow-lg shadow-sunset-coral/20 transition-all"
             >
-              <Plus className="w-4 h-4 group-hover:scale-110 transition" />
-              <span>Create New Package</span>
+              <Plus className="w-4 h-4" />
+              <span>Create New Tour Package</span>
             </button>
           )}
         </div>
 
-        {/* Filter Controls */}
-        <div className="mt-6 flex flex-col sm:flex-row items-center gap-3 pt-5 border-t border-slate-800">
-          <div className="relative flex-1 w-full">
-            <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+        {/* Filter and Search Bar */}
+        <div className="mt-8 flex flex-col md:flex-row gap-4 pt-6 border-t border-white/[0.08] items-center justify-between">
+          <div className="relative w-full md:w-80">
+            <Search className="w-4 h-4 text-sand-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search by tour name, code, or destination..."
+              placeholder="Search package code, title, or destination..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition"
+              className="w-full bg-[#070B0E] border border-white/[0.08] rounded-full pl-10 pr-4 py-2 text-xs text-ivory placeholder-sand-muted/50 focus:outline-none focus:border-sunset-coral"
             />
           </div>
 
-          <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+          {/* Category Chips */}
+          <div className="flex flex-wrap gap-1.5 items-center w-full md:w-auto">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider transition-all duration-300 ${
                   selectedCategory === cat
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
-                    : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-slate-200'
+                    ? 'bg-sunset-coral text-white font-medium shadow-md shadow-sunset-coral/20'
+                    : 'bg-white/[0.04] text-sand-muted hover:text-ivory hover:bg-white/[0.08]'
                 }`}
               >
                 {cat}
@@ -251,463 +236,306 @@ export const TourPackageManagement: React.FC<TourPackageManagementProps> = ({
         </div>
       </div>
 
-      {/* Package Cards Grid */}
+      {/* Package Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredPackages.map((pkg) => (
-          <div
-            key={pkg.id}
-            className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-700 transition-all duration-200 flex flex-col group shadow-lg"
-          >
-            {/* Image Header */}
-            <div className="relative h-48 overflow-hidden bg-slate-950">
-              <ImageWithLoader
-                src={pkg.bannerUrl}
-                alt={pkg.title}
-                aspectRatio="h-48"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-black/40 pointer-events-none" />
+        {filteredPackages.map((pkg) => {
+          const price = pkg.pricePerPax ?? 0;
+          return (
+            <div
+              key={pkg.id}
+              className="bg-[#0B1014] border border-white/[0.06] hover:border-white/20 rounded-2xl overflow-hidden shadow-xl transition-all duration-300 flex flex-col justify-between group"
+            >
+              {/* Card Banner */}
+              <div className="relative aspect-[16/10] overflow-hidden bg-black/40">
+                <img
+                  src={pkg.bannerUrl}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=1200&q=80';
+                  }}
+                  alt={pkg.title}
+                  className="w-full h-full object-cover img-editorial-card"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0B1014] via-transparent to-transparent pointer-events-none" />
 
-              <div className="absolute top-3 left-3 flex items-center gap-2">
-                <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-950/80 backdrop-blur text-cyan-300 border border-cyan-500/30">
-                  {pkg.code}
-                </span>
-                {pkg.featured && (
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/80 text-slate-950 flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" /> Featured
+                <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between">
+                  <span className="bg-black/70 backdrop-blur-md text-ivory text-[11px] font-mono tracking-wider px-3 py-1 rounded-full border border-white/10">
+                    {pkg.code}
                   </span>
-                )}
-              </div>
-
-              <div className="absolute top-3 right-3">
-                <span className={`px-2.5 py-1 rounded-md text-[11px] font-semibold backdrop-blur ${
-                  pkg.status === 'Active' 
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' 
-                    : 'bg-slate-800/80 text-slate-400 border border-slate-700'
-                }`}>
-                  {pkg.status}
-                </span>
-              </div>
-
-              <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white">
-                <div className="flex items-center gap-1.5 text-xs text-slate-200 bg-slate-950/60 backdrop-blur px-2.5 py-1 rounded-lg">
-                  <MapPin className="w-3.5 h-3.5 text-cyan-400" />
-                  <span className="truncate max-w-[180px]">{pkg.destination}</span>
-                </div>
-                <div className="flex items-center gap-1 text-xs text-amber-300 bg-slate-950/60 backdrop-blur px-2 py-1 rounded-lg">
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                  <span className="font-bold">{pkg.rating}</span>
-                  <span className="text-slate-400 text-[10px]">({pkg.reviewCount})</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Content Body */}
-            <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-              <div>
-                <div className="flex items-center gap-2 text-xs text-slate-400 mb-1.5">
-                  <Tag className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>{pkg.category}</span>
-                </div>
-                <h3 className="text-base font-bold text-white group-hover:text-cyan-300 transition line-clamp-1">
-                  {pkg.title}
-                </h3>
-
-                {/* Spec Icons */}
-                <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-800 text-xs text-slate-300">
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="w-4 h-4 text-cyan-400 shrink-0" />
-                    <span>{pkg.durationDays}D / {pkg.durationNights}N</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Users className="w-4 h-4 text-cyan-400 shrink-0" />
-                    <span>Max {pkg.maxCapacity} Pax</span>
-                  </div>
-                </div>
-
-                {/* Inclusions snippet */}
-                <div className="mt-3">
-                  <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1">
-                    Key Inclusions:
-                  </p>
-                  <ul className="text-xs text-slate-300 space-y-1">
-                    {pkg.inclusions.slice(0, 2).map((inc, i) => (
-                      <li key={i} className="flex items-center gap-1.5 text-slate-300">
-                        <Check className="w-3 h-3 text-emerald-400 shrink-0" />
-                        <span className="truncate">{inc}</span>
-                      </li>
-                    ))}
-                    {pkg.inclusions.length > 2 && (
-                      <span className="text-[11px] text-cyan-400 font-medium">
-                        +{pkg.inclusions.length - 2} more inclusions
-                      </span>
-                    )}
-                  </ul>
-                </div>
-              </div>
-
-              {/* Footer Price & Action */}
-              <div className="pt-4 border-t border-slate-800 flex items-center justify-between gap-2">
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Price per Pax</span>
-                  <span className="text-lg font-extrabold text-cyan-400">
-                    ₱{pkg.pricePerPax.toLocaleString()}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => setViewingPackage(pkg)}
-                    className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs transition"
-                    title="View Package Details & Itinerary"
+                  <span
+                    className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full tracking-wider uppercase ${
+                      pkg.status === 'Active'
+                        ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/30'
+                        : 'bg-sand-muted/20 text-sand-muted border border-white/10'
+                    }`}
                   >
-                    <Eye className="w-4 h-4" />
-                  </button>
+                    {pkg.status}
+                  </span>
+                </div>
+
+                <div className="absolute bottom-3 left-3.5 text-xs text-sand-muted flex items-center gap-2 font-mono">
+                  <MapPin className="w-3.5 h-3.5 text-sunset-coral" />
+                  <span>{pkg.destination}</span>
+                </div>
+              </div>
+
+              {/* Card Body */}
+              <div className="p-6 space-y-4 flex-1 flex flex-col justify-between">
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between text-xs text-sand-muted">
+                    <span className="text-sunset-coral font-medium uppercase tracking-wider text-[11px]">
+                      {pkg.category}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-sand-muted" />
+                      {pkg.durationDays}D / {pkg.durationNights}N
+                    </span>
+                  </div>
+
+                  <h3 className="font-serif-display text-xl sm:text-2xl text-ivory group-hover:text-white transition-colors leading-snug">
+                    {pkg.title}
+                  </h3>
+
+                  {pkg.inclusions && pkg.inclusions.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {pkg.inclusions.slice(0, 2).map((inc, i) => (
+                        <span
+                          key={i}
+                          className="text-[11px] text-sand-muted bg-white/[0.03] border border-white/[0.06] px-2.5 py-0.5 rounded-full font-light line-clamp-1"
+                        >
+                          {inc}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Card Footer */}
+                <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between gap-3">
+                  <div>
+                    <span className="text-[10px] uppercase font-sans-body tracking-wider text-sand-muted">
+                      Price / Pax
+                    </span>
+                    <div className="font-serif-display text-xl text-ivory">
+                      ₱{Number(price).toLocaleString()}
+                    </div>
+                  </div>
 
                   {isOperatorView ? (
-                    <>
-                      <button
-                        onClick={() => onDuplicatePackage(pkg)}
-                        className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs transition"
-                        title="Duplicate Package"
-                      >
-                        <Copy className="w-4 h-4" />
-                      </button>
+                    <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => handleOpenEditModal(pkg)}
-                        className="p-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded-lg text-xs border border-blue-500/30 transition"
+                        className="p-2 rounded-full bg-white/[0.04] hover:bg-white/[0.08] text-sand-muted hover:text-ivory border border-white/10 transition"
                         title="Edit Package"
                       >
-                        <Edit3 className="w-4 h-4" />
+                        <Edit3 className="w-3.5 h-3.5" />
                       </button>
                       <button
-                        onClick={() => {
-                          if (confirm(`Delete package "${pkg.title}"?`)) {
-                            onDeletePackage(pkg.id);
-                          }
-                        }}
-                        className="p-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded-lg text-xs border border-rose-500/30 transition"
+                        onClick={() => onDuplicatePackage(pkg)}
+                        className="p-2 rounded-full bg-white/[0.04] hover:bg-white/[0.08] text-sand-muted hover:text-ivory border border-white/10 transition"
+                        title="Duplicate Package"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => onDeletePackage(pkg.id)}
+                        className="p-2 rounded-full bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-800/40 transition"
                         title="Delete Package"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
-                    </>
+                    </div>
                   ) : (
                     <button
                       onClick={() => onSelectBookPackage && onSelectBookPackage(pkg)}
-                      className="px-3 py-1.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-medium text-xs rounded-lg shadow-md shadow-cyan-500/20 transition"
+                      className="px-4 py-2 bg-sunset-coral hover:bg-[#D95339] text-white text-xs font-medium rounded-full transition"
                     >
-                      Book Tour
+                      Book Now
                     </button>
                   )}
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {filteredPackages.length === 0 && (
-        <div className="text-center py-12 bg-slate-900 border border-slate-800 rounded-2xl">
-          <MapPin className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-          <h3 className="text-base font-semibold text-slate-300">No tour packages found</h3>
-          <p className="text-xs text-slate-500 mt-1">Try adjusting your search filter or create a new package.</p>
-        </div>
-      )}
-
-      {/* Package Detail Modal View */}
-      {viewingPackage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-3xl w-full p-6 text-slate-100 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <button
-              onClick={() => setViewingPackage(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition z-10"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="relative h-56 -mx-6 -mt-6 mb-6 overflow-hidden rounded-t-2xl">
-              <img
-                src={viewingPackage.bannerUrl}
-                alt={viewingPackage.title}
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
-              <div className="absolute bottom-4 left-6 right-6">
-                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 uppercase tracking-wider">
-                  {viewingPackage.category} • {viewingPackage.code}
-                </span>
-                <h2 className="text-2xl font-bold text-white mt-1">{viewingPackage.title}</h2>
-                <p className="text-xs text-slate-300 flex items-center gap-1.5 mt-1">
-                  <MapPin className="w-3.5 h-3.5 text-cyan-400" />
-                  {viewingPackage.destination}
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4 mb-6 bg-slate-800/60 p-4 rounded-xl border border-slate-700/60">
-              <div>
-                <span className="text-[10px] text-slate-400 block uppercase">Price per pax</span>
-                <span className="text-lg font-bold text-cyan-400">₱{viewingPackage.pricePerPax.toLocaleString()}</span>
-              </div>
-              <div>
-                <span className="text-[10px] text-slate-400 block uppercase">Duration</span>
-                <span className="text-sm font-semibold text-slate-200">{viewingPackage.durationDays} Days / {viewingPackage.durationNights} Nights</span>
-              </div>
-              <div>
-                <span className="text-[10px] text-slate-400 block uppercase">Max Group Capacity</span>
-                <span className="text-sm font-semibold text-slate-200">{viewingPackage.maxCapacity} Passengers</span>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              {/* Day-by-day Itinerary */}
-              <div>
-                <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-cyan-400" />
-                  Day-by-Day Activity Itinerary
-                </h3>
-                <div className="space-y-3">
-                  {viewingPackage.itinerary.map((day) => (
-                    <div key={day.dayNumber} className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-4">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-bold text-cyan-400 bg-cyan-500/10 px-2.5 py-0.5 rounded-md border border-cyan-500/20">
-                          Day {day.dayNumber}
-                        </span>
-                        <span className="text-xs text-slate-400 font-medium">{day.meals}</span>
-                      </div>
-                      <h4 className="text-sm font-bold text-slate-100">{day.title}</h4>
-                      <p className="text-xs text-slate-300 mt-1">{day.description}</p>
-                      
-                      {day.activities && day.activities.length > 0 && (
-                        <div className="mt-3 pt-2 border-t border-slate-700/60 space-y-1.5">
-                          {day.activities.map((act, idx) => (
-                            <div key={idx} className="flex items-center text-[11px] text-slate-300">
-                              <span className="w-20 font-semibold text-cyan-300">{act.time}</span>
-                              <span className="flex-1">{act.activity}</span>
-                              {act.location && <span className="text-slate-400 text-[10px] italic">({act.location})</span>}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Inclusions & Exclusions */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-emerald-950/20 border border-emerald-500/20 p-4 rounded-xl">
-                  <h4 className="text-xs font-bold text-emerald-400 mb-2 uppercase tracking-wider">Inclusions</h4>
-                  <ul className="space-y-1 text-xs text-slate-300">
-                    {viewingPackage.inclusions.map((inc, i) => (
-                      <li key={i} className="flex items-center gap-2">
-                        <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                        <span>{inc}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="bg-rose-950/20 border border-rose-500/20 p-4 rounded-xl">
-                  <h4 className="text-xs font-bold text-rose-400 mb-2 uppercase tracking-wider">Exclusions</h4>
-                  <ul className="space-y-1 text-xs text-slate-300">
-                    {viewingPackage.exclusions.map((exc, i) => (
-                      <li key={i} className="flex items-center gap-2">
-                        <X className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                        <span>{exc}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-slate-800 flex justify-end gap-3">
-              <button
-                onClick={() => setViewingPackage(null)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-xl transition"
-              >
-                Close
-              </button>
-              {!isOperatorView && onSelectBookPackage && (
-                <button
-                  onClick={() => {
-                    const pkgToBook = viewingPackage;
-                    setViewingPackage(null);
-                    onSelectBookPackage(pkgToBook);
-                  }}
-                  className="px-5 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-medium text-xs rounded-xl shadow-lg shadow-cyan-500/20 transition"
-                >
-                  Proceed to Book
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Create / Edit Package Modal */}
+      {/* Create / Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 text-slate-100 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition"
-            >
-              <X className="w-5 h-5" />
-            </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-[#0B1014] border border-white/10 rounded-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl my-8">
+            <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+              <div>
+                <span className="text-xs font-sans-body tracking-[0.2em] uppercase text-sunset-coral font-medium">
+                  {editingId ? 'Edit Package' : 'New Package'}
+                </span>
+                <h2 className="font-serif-display text-2xl sm:text-3xl text-ivory">
+                  {editingId ? 'Update Tour Package' : 'Create Tour Package'}
+                </h2>
+              </div>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-2 rounded-full text-sand-muted hover:text-ivory hover:bg-white/5 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-            <h2 className="text-lg font-bold text-white mb-4">
-              {editingId ? 'Edit Tour Package' : 'Create New Tour Package'}
-            </h2>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleSave} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-medium text-slate-300 block mb-1">Package Code</label>
+                  <label className="block text-xs font-sans-body uppercase tracking-wider text-sand-muted mb-1.5">
+                    Package Code
+                  </label>
                   <input
                     type="text"
                     required
                     value={formData.code || ''}
                     onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                    className="w-full bg-[#070B0E] border border-white/[0.08] rounded-xl px-4 py-2 text-xs text-ivory focus:outline-none focus:border-sunset-coral font-mono"
                   />
                 </div>
+
                 <div>
-                  <label className="text-xs font-medium text-slate-300 block mb-1">Category</label>
+                  <label className="block text-xs font-sans-body uppercase tracking-wider text-sand-muted mb-1.5">
+                    Category
+                  </label>
                   <select
-                    value={formData.category || 'Island Hopping'}
+                    value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value as TourCategory })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                    className="w-full bg-[#070B0E] border border-white/[0.08] rounded-xl px-4 py-2 text-xs text-ivory focus:outline-none focus:border-sunset-coral"
                   >
-                    {categories.filter(c => c !== 'All').map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
+                    {categories.filter((c) => c !== 'All').map((c) => (
+                      <option key={c} value={c}>{c}</option>
                     ))}
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-medium text-slate-300 block mb-1">Package Title</label>
+                <label className="block text-xs font-sans-body uppercase tracking-wider text-sand-muted mb-1.5">
+                  Package Title
+                </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Boracay Island Sunset & Crystal Cove Tour"
+                  placeholder="e.g. El Nido Karst Lagoon Expedition"
                   value={formData.title || ''}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                  className="w-full bg-[#070B0E] border border-white/[0.08] rounded-xl px-4 py-2 text-xs text-ivory focus:outline-none focus:border-sunset-coral"
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-medium text-slate-300 block mb-1">Destination Location</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Boracay, Aklan, Philippines"
-                  value={formData.destination || ''}
-                  onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="text-xs font-medium text-slate-300 block mb-1">Price per Pax (₱)</label>
+                  <label className="block text-xs font-sans-body uppercase tracking-wider text-sand-muted mb-1.5">
+                    Destination
+                  </label>
                   <input
-                    type="number"
+                    type="text"
                     required
-                    value={formData.pricePerPax || 0}
-                    onChange={(e) => setFormData({ ...formData, pricePerPax: Number(e.target.value) })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                    value={formData.destination || ''}
+                    onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
+                    className="w-full bg-[#070B0E] border border-white/[0.08] rounded-xl px-4 py-2 text-xs text-ivory focus:outline-none focus:border-sunset-coral"
                   />
                 </div>
+
                 <div>
-                  <label className="text-xs font-medium text-slate-300 block mb-1">Duration Days</label>
+                  <label className="block text-xs font-sans-body uppercase tracking-wider text-sand-muted mb-1.5">
+                    Duration Days
+                  </label>
                   <input
                     type="number"
-                    required
-                    min={1}
+                    min="1"
                     value={formData.durationDays || 1}
                     onChange={(e) => setFormData({ ...formData, durationDays: Number(e.target.value) })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                    className="w-full bg-[#070B0E] border border-white/[0.08] rounded-xl px-4 py-2 text-xs text-ivory focus:outline-none focus:border-sunset-coral"
                   />
                 </div>
+
                 <div>
-                  <label className="text-xs font-medium text-slate-300 block mb-1">Duration Nights</label>
+                  <label className="block text-xs font-sans-body uppercase tracking-wider text-sand-muted mb-1.5">
+                    Duration Nights
+                  </label>
                   <input
                     type="number"
-                    required
-                    min={0}
+                    min="0"
                     value={formData.durationNights || 0}
                     onChange={(e) => setFormData({ ...formData, durationNights: Number(e.target.value) })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                    className="w-full bg-[#070B0E] border border-white/[0.08] rounded-xl px-4 py-2 text-xs text-ivory focus:outline-none focus:border-sunset-coral"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-medium text-slate-300 block mb-1">Max Group Capacity</label>
+                  <label className="block text-xs font-sans-body uppercase tracking-wider text-sand-muted mb-1.5">
+                    Price Per Pax (₱)
+                  </label>
                   <input
                     type="number"
                     required
-                    min={1}
-                    value={formData.maxCapacity || 10}
-                    onChange={(e) => setFormData({ ...formData, maxCapacity: Number(e.target.value) })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                    min="100"
+                    value={formData.pricePerPax || 0}
+                    onChange={(e) => setFormData({ ...formData, pricePerPax: Number(e.target.value) })}
+                    className="w-full bg-[#070B0E] border border-white/[0.08] rounded-xl px-4 py-2 text-xs text-ivory focus:outline-none focus:border-sunset-coral font-mono font-bold"
                   />
                 </div>
+
                 <div>
-                  <label className="text-xs font-medium text-slate-300 block mb-1">Status</label>
-                  <select
-                    value={formData.status || 'Active'}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value as 'Active' | 'Draft' | 'Archived' })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
-                  >
-                    <option value="Active">Active / Published</option>
-                    <option value="Draft">Draft</option>
-                    <option value="Archived">Archived</option>
-                  </select>
+                  <label className="block text-xs font-sans-body uppercase tracking-wider text-sand-muted mb-1.5">
+                    Banner Photo Path / URL
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.bannerUrl || ''}
+                    placeholder="/images/elnido.jpg"
+                    onChange={(e) => setFormData({ ...formData, bannerUrl: e.target.value })}
+                    className="w-full bg-[#070B0E] border border-white/[0.08] rounded-xl px-4 py-2 text-xs text-ivory focus:outline-none focus:border-sunset-coral"
+                  />
                 </div>
               </div>
 
+              {/* Inclusions Builder */}
               <div>
-                <label className="text-xs font-medium text-slate-300 block mb-1">Banner Image URL</label>
-                <input
-                  type="url"
-                  required
-                  value={formData.bannerUrl || ''}
-                  onChange={(e) => setFormData({ ...formData, bannerUrl: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
-                />
-              </div>
-
-              {/* Inclusions List */}
-              <div>
-                <label className="text-xs font-medium text-slate-300 block mb-1">Inclusions</label>
+                <label className="block text-xs font-sans-body uppercase tracking-wider text-sand-muted mb-1.5">
+                  Package Inclusions
+                </label>
                 <div className="flex gap-2 mb-2">
                   <input
                     type="text"
-                    placeholder="Add inclusion (e.g., Free Snorkeling gear)"
+                    placeholder="Add inclusion (e.g. Island Hopping Boat with Crew)..."
                     value={inclusionInput}
                     onChange={(e) => setInclusionInput(e.target.value)}
-                    className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddInclusion();
+                      }
+                    }}
+                    className="flex-1 bg-[#070B0E] border border-white/[0.08] rounded-xl px-4 py-2 text-xs text-ivory focus:outline-none focus:border-sunset-coral"
                   />
                   <button
                     type="button"
                     onClick={handleAddInclusion}
-                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium rounded-xl text-cyan-400 border border-cyan-500/30"
+                    className="px-4 py-2 bg-white/[0.08] hover:bg-sunset-coral text-ivory hover:text-white rounded-xl text-xs transition"
                   >
                     Add
                   </button>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
+
+                <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
                   {(formData.inclusions || []).map((inc, i) => (
-                    <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-slate-800 text-slate-200 border border-slate-700">
+                    <span
+                      key={i}
+                      className="inline-flex items-center gap-1.5 text-xs bg-white/[0.04] border border-white/[0.08] text-ivory px-3 py-1 rounded-full"
+                    >
                       <span>{inc}</span>
-                      <button type="button" onClick={() => handleRemoveInclusion(i)} className="text-slate-400 hover:text-rose-400">
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveInclusion(i)}
+                        className="text-sand-muted hover:text-red-400"
+                      >
                         <X className="w-3 h-3" />
                       </button>
                     </span>
@@ -715,17 +543,17 @@ export const TourPackageManagement: React.FC<TourPackageManagementProps> = ({
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-800 flex justify-end gap-3">
+              <div className="pt-4 border-t border-white/[0.08] flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-xl transition"
+                  className="px-5 py-2 rounded-full text-xs text-sand-muted hover:text-ivory bg-white/[0.04] hover:bg-white/[0.08] transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-medium text-xs rounded-xl shadow-lg shadow-cyan-500/20 transition"
+                  className="px-6 py-2 rounded-full text-xs font-medium tracking-wider bg-sunset-coral hover:bg-[#D95339] text-white shadow-lg shadow-sunset-coral/20 transition"
                 >
                   Save Tour Package
                 </button>
