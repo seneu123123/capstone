@@ -1,74 +1,101 @@
 @import "tailwindcss";
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
   body {
-    background-color: #080d1a;
-    color: #f1f5f9;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #070B0E;
+    color: #F4F1EA;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     overflow-x: hidden;
+    letter-spacing: -0.01em;
   }
 
-  /* Custom sleek scrollbar */
+  /* Editorial typography classes */
+  .font-serif-display {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+  
+  .font-sans-body {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  /* Custom sleek oceanic scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #090d16;
+    background: #070B0E;
   }
   ::-webkit-scrollbar-thumb {
-    background: #1e293b;
+    background: #1B242C;
     border-radius: 9999px;
-    border: 2px solid #090d16;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #0284c7;
+    background: #F26A4F;
   }
 }
 
-/* Glassmorphism and ambient glow utilities */
-.glass-panel {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(12px);
+/* Emergent Editorial Atmosphere Styling */
+.bg-obsidian-deep {
+  background-color: #070B0E;
+}
+
+.bg-obsidian-card {
+  background-color: #0D1318;
+}
+
+.border-obsidian-subtle {
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+.text-sunset-coral {
+  color: #F26A4F;
+}
+
+.bg-sunset-coral {
+  background-color: #F26A4F;
+}
+
+.border-sunset-coral {
+  border-color: #F26A4F;
+}
+
+.text-ivory {
+  color: #F4F1EA;
+}
+
+.text-sand-muted {
+  color: #8E98A0;
+}
+
+/* Glassmorphism & Atmospheric Depth */
+.glass-obsidian {
+  background: rgba(13, 19, 24, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.glass-panel-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.glass-panel-hover:hover {
-  background: rgba(15, 23, 42, 0.88);
-  border-color: rgba(56, 189, 248, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 30px -10px rgba(2, 132, 199, 0.25);
+.glass-obsidian-nav {
+  background: rgba(7, 11, 14, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* Shimmer animation for skeleton loaders */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+/* Subtle image zoom on hover */
+.img-editorial-card {
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.img-editorial-card:hover {
+  transform: scale(1.04);
 }
 
-.animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(30, 41, 59, 0.8) 0%,
-    rgba(51, 65, 85, 0.9) 50%,
-    rgba(30, 41, 59, 0.8) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.8s infinite;
-}
-
-/* Glowing text highlight */
-.glow-text-cyan {
-  text-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
-}
-
-.glow-text-gold {
-  text-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+/* Soft text shadow for readability over dark landscapes */
+.hero-text-shadow {
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.65);
 }

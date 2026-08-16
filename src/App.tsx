@@ -21,8 +21,9 @@ import {
   savePackages 
 } from './utils/storage';
 import { CapstoneInfoModal } from './components/CapstoneInfoModal';
-import { ClientNavbar, ClientTab } from './components/client/ClientNavbar';
+import { ClientNavbar } from './components/client/ClientNavbar';
 import { ClientPortal } from './components/client/ClientPortal';
+import { ClientFooter } from './components/client/ClientFooter';
 import { AdminNavbar } from './components/admin/AdminNavbar';
 import { AdminPortal } from './components/admin/AdminPortal';
 import { AdminLoginModal } from './components/admin/AdminLoginModal';
@@ -31,9 +32,9 @@ import { SkeletonLoader } from './components/common/SkeletonLoader';
 const DEFAULT_SETTINGS: AppSettings = {
   agency: {
     companyName: 'Holiday Travelers Travel and Tours Inc',
-    shortName: 'Holiday Travelers',
+    shortName: 'Holiday Archipelago',
     accreditationNo: 'DOT-ACCR-RO7-2026-8819',
-    tagline: 'Creating Unforgettable Memories Across the Philippine Islands',
+    tagline: 'Curated Island Expeditions Across the Philippine Seas',
     email: 'bookings@holidaytravelers.ph',
     phone: '+63 (032) 412-8899 / +63 917 888 7766',
     address: 'Suite 402, Holiday Tower, Maxilom Avenue, Cebu City, Philippines',
@@ -50,19 +51,25 @@ const DEFAULT_SETTINGS: AppSettings = {
 };
 
 export default function App() {
-  // Navigation & View Mode State
+  // Navigation & View Mode State (Check URL param ?view=admin or /admin for isolation)
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('view') === 'admin' || window.location.pathname.includes('/admin')) {
+      return 'operator';
+    }
     const saved = localStorage.getItem('holiday_view_mode');
     return saved === 'operator' ? 'operator' : 'customer';
   });
 
-  const [clientTab, setClientTab] = useState<ClientTab>('tours');
   const [adminTab, setAdminTab] = useState<SubmoduleTab>('overview');
   const [isTabLoading, setIsTabLoading] = useState<boolean>(false);
 
-  // Modals & Auth State
+  // Modals & Client State
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+  const [isTrackerOpen, setIsTrackerOpen] = useState<boolean>(false);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState<boolean>(false);
   const [isCapstoneModalOpen, setIsCapstoneModalOpen] = useState<boolean>(false);
+
   const [adminSession, setAdminSession] = useState<{ email: string; role: string } | null>(() => {
     const saved = localStorage.getItem('holiday_admin_session');
     if (saved) {
@@ -218,14 +225,6 @@ export default function App() {
     window.location.reload();
   };
 
-  // Tab Loading Transitions
-  const handleClientTabChange = (newTab: ClientTab) => {
-    if (newTab === clientTab) return;
-    setIsTabLoading(true);
-    setClientTab(newTab);
-    setTimeout(() => setIsTabLoading(false), 150);
-  };
-
   const handleAdminTabChange = (newTab: SubmoduleTab) => {
     if (newTab === adminTab) return;
     setIsTabLoading(true);
@@ -243,62 +242,81 @@ export default function App() {
   const handleLogout = () => {
     setAdminSession(null);
     setViewMode('customer');
-    setClientTab('tours');
   };
 
   const pendingPaymentsCount = bookings.filter((b) => b.invoice.balanceDue > 0).length;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-slate-950 flex flex-col">
-      {/* Dynamic Navigation Header based on View Mode */}
+    <div className="min-h-screen bg-[#070B0E] text-[#F4F1EA] font-sans antialiased selection:bg-[#F26A4F] selection:text-white flex flex-col">
+      {/* ========================================================================= */}
+      {/* MODE 1: 100% IMMERSIVE CLIENT WEBSITE (Archipelago Emergent Design)       */}
+      {/* ========================================================================= */}
       {viewMode === 'customer' ? (
-        <ClientNavbar
-          activeTab={clientTab}
-          onTabChange={handleClientTabChange}
-          onOpenLoginModal={() => setIsLoginModalOpen(true)}
-          onOpenSpecsModal={() => setIsCapstoneModalOpen(true)}
-          companyName={appSettings.agency.companyName}
-          phone={appSettings.agency.phone}
-          bookingCount={bookings.length}
-        />
-      ) : (
-        <AdminNavbar
-          activeTab={adminTab}
-          onTabChange={handleAdminTabChange}
-          onOpenCapstoneModal={() => setIsCapstoneModalOpen(true)}
-          onLogout={handleLogout}
-          bookingCount={bookings.length}
-          pendingPaymentCount={pendingPaymentsCount}
-          adminEmail={adminSession?.email || 'admin@holidaytravelers.ph'}
-          adminRole={adminSession?.role || 'Senior Tour Operations Manager'}
-        />
-      )}
+        <>
+          <ClientNavbar
+            onOpenBooking={(pkgId) => {
+              if (pkgId) {
+                const found = packages.find((p) => p.id === pkgId);
+                if (found) setPreSelectedPackage(found);
+              }
+              setIsBookingModalOpen(true);
+            }}
+            onOpenTracker={() => setIsTrackerOpen(true)}
+            onOpenAdminAuth={() => setIsLoginModalOpen(true)}
+            isStaffLoggedIn={Boolean(adminSession)}
+            onOpenAdminPortal={() => setViewMode('operator')}
+          />
 
-      {/* Main Workspace Body */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {isTabLoading ? (
-          <div className="space-y-6">
-            <SkeletonLoader type="banner" />
-            <SkeletonLoader type="card" count={3} />
-          </div>
-        ) : (
-          <>
-            {viewMode === 'customer' ? (
-              <ClientPortal
-                activeTab={clientTab}
-                onTabChange={handleClientTabChange}
-                packages={packages}
-                bookings={bookings}
-                feedbacks={feedbacks}
-                onCreateBooking={handleCreateBooking}
-                onSubmitFeedback={handleSubmitFeedback}
-                preSelectedPackage={preSelectedPackage}
-                onSelectBookPackage={(pkg) => {
-                  setPreSelectedPackage(pkg);
-                  setClientTab('book');
-                }}
-                onClearPreSelectedPackage={() => setPreSelectedPackage(null)}
-              />
+          <main className="flex-1 w-full">
+            <ClientPortal
+              packages={packages}
+              bookings={bookings}
+              feedbacks={feedbacks}
+              onCreateBooking={handleCreateBooking}
+              onSubmitFeedback={handleSubmitFeedback}
+              preSelectedPackage={preSelectedPackage}
+              onSelectBookPackage={(pkg) => setPreSelectedPackage(pkg)}
+              onClearPreSelectedPackage={() => setPreSelectedPackage(null)}
+              isTrackerOpen={isTrackerOpen}
+              onCloseTracker={() => setIsTrackerOpen(false)}
+              isBookingModalOpen={isBookingModalOpen}
+              onCloseBookingModal={() => setIsBookingModalOpen(false)}
+              onOpenBookingModal={(pkg) => {
+                if (pkg) setPreSelectedPackage(pkg);
+                setIsBookingModalOpen(true);
+              }}
+            />
+          </main>
+
+          <ClientFooter
+            onOpenAdminAuth={() => setIsLoginModalOpen(true)}
+            onOpenTracker={() => setIsTrackerOpen(true)}
+            isStaffLoggedIn={Boolean(adminSession)}
+            onOpenAdminPortal={() => setViewMode('operator')}
+          />
+        </>
+      ) : (
+        /* ========================================================================= */
+        /* MODE 2: ISOLATED ADMIN TOUR OPERATIONS ENTERPRISE PORTAL                  */
+        /* ========================================================================= */
+        <div className="min-h-screen bg-slate-950 flex flex-col">
+          <AdminNavbar
+            activeTab={adminTab}
+            onTabChange={handleAdminTabChange}
+            onOpenCapstoneModal={() => setIsCapstoneModalOpen(true)}
+            onLogout={handleLogout}
+            bookingCount={bookings.length}
+            pendingPaymentCount={pendingPaymentsCount}
+            adminEmail={adminSession?.email || 'admin@holidaytravelers.ph'}
+            adminRole={adminSession?.role || 'Senior Tour Operations Manager'}
+          />
+
+          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+            {isTabLoading ? (
+              <div className="space-y-6">
+                <SkeletonLoader type="banner" />
+                <SkeletonLoader type="card" count={3} />
+              </div>
             ) : (
               <AdminPortal
                 activeTab={adminTab}
@@ -320,46 +338,41 @@ export default function App() {
                 onResetSettings={() => setAppSettings(DEFAULT_SETTINGS)}
               />
             )}
-          </>
-        )}
-      </main>
+          </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950 py-6 text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div>
-            <strong>{appSettings.agency.companyName}</strong> — Tour Operations & Customer Booking System ({appSettings.agency.accreditationNo})
-          </div>
-          <div className="flex items-center gap-3 text-[11px] text-slate-400">
-            <span>6/6 Submodules Verified</span>
-            <span>•</span>
-            <button
-              onClick={() => setIsCapstoneModalOpen(true)}
-              className="text-cyan-400 hover:underline"
-            >
-              System Specs
-            </button>
-            <span>•</span>
-            {viewMode === 'customer' ? (
-              <button
-                onClick={() => setIsLoginModalOpen(true)}
-                className="text-slate-400 hover:text-cyan-400 underline"
-              >
-                Staff Portal Access
-              </button>
-            ) : (
-              <button
-                onClick={handleLogout}
-                className="text-rose-400 hover:underline"
-              >
-                Exit Operator Mode
-              </button>
-            )}
-          </div>
+          <footer className="border-t border-slate-900 bg-slate-950 py-5 text-xs text-slate-500">
+            <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div>
+                <strong>{appSettings.agency.companyName}</strong> — Operator Command Center ({appSettings.agency.accreditationNo})
+              </div>
+              <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                <button
+                  onClick={() => setIsCapstoneModalOpen(true)}
+                  className="text-cyan-400 hover:underline"
+                >
+                  System Specs
+                </button>
+                <span>•</span>
+                <button
+                  onClick={() => setViewMode('customer')}
+                  className="text-sunset-coral hover:underline"
+                >
+                  Return to Public Website
+                </button>
+                <span>•</span>
+                <button
+                  onClick={handleLogout}
+                  className="text-rose-400 hover:underline"
+                >
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          </footer>
         </div>
-      </footer>
+      )}
 
-      {/* Admin Login Modal */}
+      {/* Admin Login Modal (Accessible from discreet staff access trigger) */}
       <AdminLoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
