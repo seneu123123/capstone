@@ -28,6 +28,7 @@ import { AdminNavbar } from './components/admin/AdminNavbar';
 import { AdminPortal } from './components/admin/AdminPortal';
 import { AdminLoginModal } from './components/admin/AdminLoginModal';
 import { SkeletonLoader } from './components/common/SkeletonLoader';
+import { AiCustomerConcierge } from './components/client/AiCustomerConcierge';
 import { applyAdminTheme } from './utils/theme';
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -316,6 +317,14 @@ export default function App() {
             onOpenTracker={() => setIsTrackerOpen(true)}
             isStaffLoggedIn={Boolean(adminSession)}
             onOpenAdminPortal={() => setViewMode('operator')}
+          />
+
+          <AiCustomerConcierge
+            packages={packages}
+            onSelectPackage={(pkg) => {
+              setPreSelectedPackage(pkg);
+              setIsBookingModalOpen(true);
+            }}
           />
         </>
       ) : (
