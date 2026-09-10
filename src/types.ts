@@ -1,4 +1,12 @@
-export type TourCategory = 'Island Hopping' | 'Adventure & Nature' | 'Heritage & Culture' | 'Luxury & Wellness' | 'City Tour';
+export type TourCategory = 
+  | 'Island Hopping' 
+  | 'Adventure & Nature' 
+  | 'Heritage & Culture' 
+  | 'Luxury & Wellness' 
+  | 'City Tour'
+  | 'International & Pilgrimage'
+  | 'Grand Asia & Far East'
+  | 'European Grandeur';
 
 export interface DayActivity {
   time: string;
@@ -19,6 +27,7 @@ export interface TourPackage {
   id: string;
   code: string; // e.g. PKG-ELNIDO-01
   title: string;
+  subtitle?: string;
   destination: string;
   category: TourCategory;
   durationDays: number;
@@ -32,6 +41,9 @@ export interface TourPackage {
   reviewCount: number;
   status: 'Active' | 'Draft' | 'Archived';
   featured?: boolean;
+  airline?: string;
+  departureDates?: string[];
+  specialFeatures?: string[];
   itinerary: DayItinerary[];
 }
 

@@ -1,10 +1,13 @@
 import { Booking, CustomerFeedback, TourPackage } from '../types';
+import { BROCHURE_TOUR_PACKAGES } from './brochurePackages';
 
 export const INITIAL_TOUR_PACKAGES: TourPackage[] = [
+  ...BROCHURE_TOUR_PACKAGES,
   {
     id: 'pkg-01',
     code: 'PKG-PAL-01',
     title: 'El Nido & Coron Paradise Island Hopping',
+    subtitle: 'Bacuit Bay Big Lagoon, Kayangan Lake & WWII Coral Reef Shipwrecks',
     destination: 'Palawan, Philippines',
     category: 'Island Hopping',
     durationDays: 4,
@@ -16,6 +19,13 @@ export const INITIAL_TOUR_PACKAGES: TourPackage[] = [
     rating: 4.9,
     reviewCount: 38,
     bannerUrl: '/images/elnido.jpg',
+    airline: 'Direct Flights via AirSWIFT / Sunlight Air',
+    departureDates: ['Weekly Daily Departures', 'Oct - May Best Season'],
+    specialFeatures: [
+      'Private Speedboat to Big Lagoon & Hidden Beach',
+      'Coron Fastcraft Crossing & Kayangan Lake Pristine Waters',
+      'Fresh Seafood Beachfront Grill Buffet'
+    ],
     inclusions: [
       '3-Night Hotel Accommodation (4-Star Beachfront)',
       'Daily Buffet Breakfast & 2 Seafood Beach Lunches',
@@ -82,6 +92,7 @@ export const INITIAL_TOUR_PACKAGES: TourPackage[] = [
     id: 'pkg-02',
     code: 'PKG-BOH-02',
     title: 'Bohol Wonders, Tarsier Sanctuary & Panglao Escape',
+    subtitle: 'Chocolate Hills, Balicasag Sea Turtle Haven & Loboc Floating Buffet',
     destination: 'Bohol, Philippines',
     category: 'Heritage & Culture',
     durationDays: 3,
@@ -93,6 +104,13 @@ export const INITIAL_TOUR_PACKAGES: TourPackage[] = [
     rating: 4.8,
     reviewCount: 24,
     bannerUrl: '/images/pac3.jpg',
+    airline: 'Direct Flights to Bohol-Panglao (TAG)',
+    departureDates: ['Year-Round Daily Schedules'],
+    specialFeatures: [
+      'Loboc River Floating Restaurant Buffet with Live Cultural Serenaders',
+      'Balicasag Island Snorkeling with Wild Sea Turtles',
+      'Chocolate Hills Panoramic Viewing Deck'
+    ],
     inclusions: [
       '2-Night Resort Accommodation at Panglao Island',
       'Loboc River Cruise Buffet Lunch with Live Cultural Music',
@@ -146,6 +164,7 @@ export const INITIAL_TOUR_PACKAGES: TourPackage[] = [
     id: 'pkg-03',
     code: 'PKG-SRG-03',
     title: 'Siargao Island Surfing & Sugba Lagoon Expedition',
+    subtitle: 'Cloud 9 Surf Coaching, Tri-Island Sandbars & Emerald Lagoon',
     destination: 'Siargao Island, Philippines',
     category: 'Adventure & Nature',
     durationDays: 4,
@@ -157,6 +176,13 @@ export const INITIAL_TOUR_PACKAGES: TourPackage[] = [
     rating: 4.9,
     reviewCount: 19,
     bannerUrl: '/images/siargao.png',
+    airline: 'Direct Flights to Sayak Airport (IAO)',
+    departureDates: ['Year-Round Departures', 'Surf Swell Peak Sep - Dec'],
+    specialFeatures: [
+      '1-on-1 Certified Surf Coaching Lesson at Cloud 9',
+      'Sugba Lagoon Cliff Diving & Stand-up Paddleboarding',
+      'Maasin River Bent Coconut Tree Rope Swing'
+    ],
     inclusions: [
       '3-Night Boutique Surf Resort Stay in General Luna',
       'Tri-Island Tour (Naked Island, Daku Island, Guyam Island)',

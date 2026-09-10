@@ -2,7 +2,7 @@ import { Booking, CustomerFeedback, TourPackage } from '../types';
 import { INITIAL_BOOKINGS, INITIAL_FEEDBACKS, INITIAL_TOUR_PACKAGES } from '../data/mockData';
 
 const KEYS = {
-  PACKAGES: 'voyage_tour_packages_v1',
+  PACKAGES: 'voyage_tour_packages_v2_brochures',
   BOOKINGS: 'voyage_bookings_v1',
   FEEDBACKS: 'voyage_feedbacks_v1'
 };
@@ -10,7 +10,23 @@ const KEYS = {
 export const getStoredPackages = (): TourPackage[] => {
   try {
     const data = localStorage.getItem(KEYS.PACKAGES);
-    return data ? JSON.parse(data) : INITIAL_TOUR_PACKAGES;
+    if (!data) {
+      // Also check if v1 had user-created custom packages and merge them
+      const v1Data = localStorage.getItem('voyage_tour_packages_v1');
+      if (v1Data) {
+        try {
+          const parsedV1: TourPackage[] = JSON.parse(v1Data);
+          const customPkgs = parsedV1.filter(p => !['pkg-01', 'pkg-02', 'pkg-03'].includes(p.id));
+          const merged = [...INITIAL_TOUR_PACKAGES, ...customPkgs];
+          localStorage.setItem(KEYS.PACKAGES, JSON.stringify(merged));
+          return merged;
+        } catch {
+          // fallback
+        }
+      }
+      return INITIAL_TOUR_PACKAGES;
+    }
+    return JSON.parse(data);
   } catch (e) {
     console.error('Error loading stored packages:', e);
     return INITIAL_TOUR_PACKAGES;
