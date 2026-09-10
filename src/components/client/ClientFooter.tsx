@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { Compass, ArrowUp, Lock, Eye, Scale, Cookie, FileCheck, CheckCircle2 } from 'lucide-react';
 import { LegalPolicyTab } from '../../types/compliance';
 
@@ -27,6 +27,33 @@ export const ClientFooter: React.FC<ClientFooterProps> = ({
     if (onOpenLegalPolicy) {
       onOpenLegalPolicy(tab);
     }
+  };
+
+  // Easter Egg 2: Long press (press and hold for 1.8 seconds) on DOT Accreditation or copyright opens Admin Authentication
+  const pressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isHolding, setIsHolding] = useState(false);
+
+  const startPressTimer = () => {
+    setIsHolding(true);
+    pressTimerRef.current = setTimeout(() => {
+      if (navigator.vibrate) {
+        navigator.vibrate([80, 50, 80]);
+      }
+      if (isStaffLoggedIn && onOpenAdminPortal) {
+        onOpenAdminPortal();
+      } else if (onOpenAdminAuth) {
+        onOpenAdminAuth();
+      }
+      setIsHolding(false);
+    }, 1800);
+  };
+
+  const cancelPressTimer = () => {
+    if (pressTimerRef.current) {
+      clearTimeout(pressTimerRef.current);
+      pressTimerRef.current = null;
+    }
+    setIsHolding(false);
   };
 
   return (
@@ -215,7 +242,18 @@ export const ClientFooter: React.FC<ClientFooterProps> = ({
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <p>© {new Date().getFullYear()} Holiday Travelers Travel & Tours Inc. All rights reserved.</p>
             <span>•</span>
-            <p className="cursor-default select-none" title="DOT Registered Entity">
+            <p 
+              onMouseDown={startPressTimer}
+              onMouseUp={cancelPressTimer}
+              onMouseLeave={cancelPressTimer}
+              onTouchStart={startPressTimer}
+              onTouchEnd={cancelPressTimer}
+              onTouchCancel={cancelPressTimer}
+              className={`cursor-default select-none transition-all duration-500 ${
+                isHolding ? 'text-sunset-coral scale-105 opacity-100' : ''
+              }`}
+              title="DOT Registered Entity"
+            >
               DOT Accreditation: DOT-ACCR-RO7-2026-8819
             </p>
           </div>

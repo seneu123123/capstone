@@ -37,9 +37,32 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
     }
   };
 
+  const [logoTapCount, setLogoTapCount] = useState(0);
+
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
     scrollToSection('hero');
+
+    // Mobile Easter Egg 1: Rapidly tapping brand logo 5 times unlocks/triggers Admin Authentication
+    const nextCount = logoTapCount + 1;
+    setLogoTapCount(nextCount);
+
+    if (nextCount >= 5) {
+      setLogoTapCount(0);
+      if (navigator.vibrate) {
+        navigator.vibrate([40, 60, 40]);
+      }
+      if (isStaffLoggedIn && onOpenAdminPortal) {
+        onOpenAdminPortal();
+      } else if (onOpenAdminAuth) {
+        onOpenAdminAuth();
+      }
+    } else {
+      // Reset counter if taps are separated by more than 2 seconds
+      setTimeout(() => {
+        setLogoTapCount(0);
+      }, 2000);
+    }
   };
 
   return (
@@ -121,7 +144,7 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
 
         {/* Action CTAs */}
         <div className="hidden md:flex items-center gap-3">
-          {isStaffLoggedIn ? (
+          {isStaffLoggedIn && (
             <button
               onClick={onOpenAdminPortal}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium bg-sunset-coral/15 hover:bg-sunset-coral/25 text-sunset-coral border border-sunset-coral/40 transition-all shadow-sm"
@@ -130,16 +153,6 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
             >
               <Lock className="w-3.5 h-3.5" />
               <span>Admin Portal</span>
-            </button>
-          ) : (
-            <button
-              onClick={onOpenAdminAuth}
-              className="p-2 text-sand-muted hover:text-ivory hover:bg-white/5 rounded-full transition-colors"
-              title="Staff & Operator Login (or Ctrl+Shift+A)"
-              id="nav-staff-login-btn"
-              aria-label="Staff Login"
-            >
-              <Lock className="w-4 h-4 text-sand-muted hover:text-sunset-coral transition-colors" />
             </button>
           )}
 

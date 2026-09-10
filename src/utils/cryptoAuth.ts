@@ -1,4 +1,5 @@
 import { SecurityAuditLog } from '../types';
+import { sendEmailNotification } from './directEmailService';
 
 // ============================================================================
 // BASE32 ENCODING / DECODING (RFC 3548 / RFC 4648)
@@ -60,6 +61,7 @@ export function generateBackupCodes(count = 5): string[] {
 // ============================================================================
 // EMAIL 2FA 6-DIGIT VERIFICATION CODE ENGINE (COMPOSER EMAIL 2FA)
 // ============================================================================
+
 export interface EmailVerificationSession {
   code: string;
   email: string;
@@ -88,6 +90,16 @@ export function generateEmailOtpCode(email: string): EmailVerificationSession {
   };
 
   activeEmailCodes.set(normEmail, session);
+
+  // Dispatch via direct client email notification service
+  sendEmailNotification({
+    toEmail: normEmail,
+    subject: session.subject,
+    body: session.body,
+    otpCode: code,
+    type: 'otp'
+  }).catch(() => {});
+
   return session;
 }
 

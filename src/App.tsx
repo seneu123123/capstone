@@ -118,19 +118,28 @@ export default function App() {
     window.addEventListener('keydown', handleKeyDown);
 
     // Check for deep link staff query or hash
-    const urlParams = new URLSearchParams(window.location.search);
-    const hash = window.location.hash;
-    if (
-      urlParams.get('admin') === 'login' || 
-      urlParams.get('staff') === 'true' || 
-      urlParams.get('portal') === 'operator' ||
-      hash === '#staff' ||
-      hash === '#admin'
-    ) {
-      setIsLoginModalOpen(true);
-    }
+    const checkHashAndQuery = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const hash = window.location.hash;
+      if (
+        urlParams.get('admin') === 'login' || 
+        urlParams.get('staff') === 'true' || 
+        urlParams.get('portal') === 'operator' ||
+        hash === '#staff' ||
+        hash === '#admin' ||
+        hash === '#terminal'
+      ) {
+        setIsLoginModalOpen(true);
+      }
+    };
 
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    checkHashAndQuery();
+    window.addEventListener('hashchange', checkHashAndQuery);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('hashchange', checkHashAndQuery);
+    };
   }, []);
 
   const [adminSession, setAdminSession] = useState<{ email: string; role: string } | null>(() => {
