@@ -27,7 +27,7 @@ const DESTINATIONS: DestinationItem[] = [
     coordinates: '9.85° N / 126.05° E',
     italicTagline: 'Pacific swell and coconut canopies',
     description: 'Tear-drop island fringed by untouched mangrove waterways, emerald tidal pools at Magpupungko, and world-class breaks at Cloud 9.',
-    image: '/images/siargao.jpg',
+    image: '/images/siargao.png',
     fallbackImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'
   },
   {
@@ -101,7 +101,9 @@ export const ClientDestinations: React.FC<ClientDestinationsProps> = () => {
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = dest.fallbackImage;
                       }}
-                      alt={dest.name}
+                      alt={`${dest.name} archipelago destination landscape`}
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
                       className="w-full h-full object-cover img-editorial-card"
                     />
                   </div>

@@ -27,8 +27,14 @@ import { ClientFooter } from './components/client/ClientFooter';
 import { AdminNavbar } from './components/admin/AdminNavbar';
 import { AdminPortal } from './components/admin/AdminPortal';
 import { AdminLoginModal } from './components/admin/AdminLoginModal';
+import { SessionInactivityGuard } from './components/admin/SessionInactivityGuard';
 import { SkeletonLoader } from './components/common/SkeletonLoader';
 import { AiCustomerConcierge } from './components/client/AiCustomerConcierge';
+import { GlobalWeatherRadarModal } from './components/client/GlobalWeatherRadarModal';
+import { LegalComplianceModal } from './components/common/LegalComplianceModal';
+import { CookieConsentBanner } from './components/common/CookieConsentBanner';
+import { LegalPolicyTab } from './types/compliance';
+import { trackEvent } from './utils/analytics';
 import { applyAdminTheme } from './utils/theme';
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -77,6 +83,55 @@ export default function App() {
   const [isTrackerOpen, setIsTrackerOpen] = useState<boolean>(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState<boolean>(false);
   const [isCapstoneModalOpen, setIsCapstoneModalOpen] = useState<boolean>(false);
+  const [isWeatherRadarOpen, setIsWeatherRadarOpen] = useState<boolean>(false);
+  const [isLegalModalOpen, setIsLegalModalOpen] = useState<boolean>(false);
+  const [legalModalTab, setLegalModalTab] = useState<LegalPolicyTab>('privacy');
+  const [isCookiePreferencesOpen, setIsCookiePreferencesOpen] = useState<boolean>(false);
+
+  const handleOpenLegalPolicy = (tab: LegalPolicyTab) => {
+    setLegalModalTab(tab);
+    setIsLegalModalOpen(true);
+    trackEvent('view_legal_policy', 'compliance', { policy: tab });
+  };
+
+  useEffect(() => {
+    trackEvent('page_view', 'navigation', { view: viewMode });
+  }, [viewMode]);
+
+  // Discrete Staff Hotkeys (Ctrl+Shift+A, Cmd+Shift+A, Ctrl+Alt+A, Ctrl+Shift+L, Cmd+Shift+L) & URL triggers
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isCmdOrCtrl = e.ctrlKey || e.metaKey;
+      const isShiftOrAlt = e.shiftKey || e.altKey;
+
+      if (
+        (isCmdOrCtrl && e.shiftKey && (e.key === 'A' || e.key === 'a')) ||
+        (isCmdOrCtrl && e.altKey && (e.key === 'A' || e.key === 'a')) ||
+        (isCmdOrCtrl && e.shiftKey && (e.key === 'L' || e.key === 'l')) ||
+        (isCmdOrCtrl && e.altKey && (e.key === 'L' || e.key === 'l')) ||
+        (e.altKey && e.shiftKey && (e.key === 'A' || e.key === 'a'))
+      ) {
+        e.preventDefault();
+        setIsLoginModalOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Check for deep link staff query or hash
+    const urlParams = new URLSearchParams(window.location.search);
+    const hash = window.location.hash;
+    if (
+      urlParams.get('admin') === 'login' || 
+      urlParams.get('staff') === 'true' || 
+      urlParams.get('portal') === 'operator' ||
+      hash === '#staff' ||
+      hash === '#admin'
+    ) {
+      setIsLoginModalOpen(true);
+    }
+
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const [adminSession, setAdminSession] = useState<{ email: string; role: string } | null>(() => {
     const saved = localStorage.getItem('holiday_admin_session');
@@ -272,6 +327,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#070B0E] text-[#F4F1EA] font-sans antialiased selection:bg-[#F26A4F] selection:text-white flex flex-col">
+      {/* Accessible Skip Link for Screen Readers (ISO/IEC 40500 / WCAG 2.1 AA) */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-sunset-coral focus:text-white focus:rounded-full focus:shadow-2xl focus:text-xs focus:font-semibold focus:outline-none"
+      >
+        Skip to main content (ISO/IEC 40500 Accessible)
+      </a>
+
       {/* ========================================================================= */}
       {/* MODE 1: 100% IMMERSIVE CLIENT WEBSITE (Archipelago Emergent Design)       */}
       {/* ========================================================================= */}
@@ -287,11 +350,12 @@ export default function App() {
             }}
             onOpenTracker={() => setIsTrackerOpen(true)}
             onOpenAdminAuth={() => setIsLoginModalOpen(true)}
+            onOpenWeatherRadar={() => setIsWeatherRadarOpen(true)}
             isStaffLoggedIn={Boolean(adminSession)}
             onOpenAdminPortal={() => setViewMode('operator')}
           />
 
-          <main className="flex-1 w-full">
+          <main className="flex-1 w-full" id="main-content">
             <ClientPortal
               packages={packages}
               bookings={bookings}
@@ -309,6 +373,8 @@ export default function App() {
                 if (pkg) setPreSelectedPackage(pkg);
                 setIsBookingModalOpen(true);
               }}
+              onOpenWeatherRadar={() => setIsWeatherRadarOpen(true)}
+              onOpenLegalPolicy={handleOpenLegalPolicy}
             />
           </main>
 
@@ -317,6 +383,8 @@ export default function App() {
             onOpenTracker={() => setIsTrackerOpen(true)}
             isStaffLoggedIn={Boolean(adminSession)}
             onOpenAdminPortal={() => setViewMode('operator')}
+            onOpenLegalPolicy={handleOpenLegalPolicy}
+            onOpenCookiePreferences={() => setIsCookiePreferencesOpen(true)}
           />
 
           <AiCustomerConcierge
@@ -331,84 +399,92 @@ export default function App() {
         /* ========================================================================= */
         /* MODE 2: ISOLATED ADMIN TOUR OPERATIONS ENTERPRISE PORTAL                  */
         /* ========================================================================= */
-        <div 
-          className="min-h-screen admin-theme-wrapper flex flex-col transition-colors duration-300"
-          style={{ backgroundColor: 'var(--admin-bg-base, #070B0E)' }}
+        <SessionInactivityGuard
+          adminEmail={adminSession?.email || 'admin@holidaytravelers.ph'}
+          adminRole={adminSession?.role || 'Super Admin'}
+          onLogout={handleLogout}
         >
-          <AdminNavbar
-            activeTab={adminTab}
-            onTabChange={handleAdminTabChange}
-            onOpenCapstoneModal={() => setIsCapstoneModalOpen(true)}
-            onLogout={handleLogout}
-            bookingCount={bookings.length}
-            pendingPaymentCount={pendingPaymentsCount}
-            adminEmail={adminSession?.email || 'admin@holidaytravelers.ph'}
-            adminRole={adminSession?.role || 'Senior Tour Operations Manager'}
-          />
-
-          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-            {isTabLoading ? (
-              <div className="space-y-6">
-                <SkeletonLoader type="banner" />
-                <SkeletonLoader type="card" count={3} />
-              </div>
-            ) : (
-              <AdminPortal
-                activeTab={adminTab}
-                onTabChange={handleAdminTabChange}
-                packages={packages}
-                bookings={bookings}
-                feedbacks={feedbacks}
-                appSettings={appSettings}
-                onSavePackage={handleSavePackage}
-                onDeletePackage={handleDeletePackage}
-                onDuplicatePackage={handleDuplicatePackage}
-                onUpdateBookingStatus={handleUpdateBookingStatus}
-                onUpdateGuide={handleUpdateGuide}
-                onUpdateHotelReservation={handleUpdateHotelReservation}
-                onUpdateTransportReservation={handleUpdateTransportReservation}
-                onAddPaymentRecord={handleAddPaymentRecord}
-                onSubmitFeedback={handleSubmitFeedback}
-                onUpdateSettings={(newSettings) => setAppSettings(newSettings)}
-                onResetSettings={() => setAppSettings(DEFAULT_SETTINGS)}
-              />
-            )}
-          </main>
-
-          <footer 
-            className="border-t border-white/[0.06] py-5 text-xs text-sand-muted transition-colors duration-300"
+          <div 
+            className="min-h-screen admin-theme-wrapper flex flex-col transition-colors duration-300"
             style={{ backgroundColor: 'var(--admin-bg-base, #070B0E)' }}
           >
-            <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div>
-                <strong className="text-ivory">{appSettings.agency.companyName}</strong> — Operator Command Center ({appSettings.agency.accreditationNo})
+            <AdminNavbar
+              activeTab={adminTab}
+              onTabChange={handleAdminTabChange}
+              onOpenCapstoneModal={() => setIsCapstoneModalOpen(true)}
+              onLogout={handleLogout}
+              bookingCount={bookings.length}
+              pendingPaymentCount={pendingPaymentsCount}
+              adminEmail={adminSession?.email || 'admin@holidaytravelers.ph'}
+              adminRole={adminSession?.role || 'Senior Tour Operations Manager'}
+            />
+
+            <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+              {isTabLoading ? (
+                <div className="space-y-6">
+                  <SkeletonLoader type="banner" />
+                  <SkeletonLoader type="card" count={3} />
+                </div>
+              ) : (
+                <AdminPortal
+                  activeTab={adminTab}
+                  onTabChange={handleAdminTabChange}
+                  packages={packages}
+                  bookings={bookings}
+                  feedbacks={feedbacks}
+                  appSettings={appSettings}
+                  adminEmail={adminSession?.email || 'admin@holidaytravelers.ph'}
+                  adminRole={adminSession?.role || 'Senior Tour Operations Manager'}
+                  onSavePackage={handleSavePackage}
+                  onDeletePackage={handleDeletePackage}
+                  onDuplicatePackage={handleDuplicatePackage}
+                  onUpdateBookingStatus={handleUpdateBookingStatus}
+                  onUpdateGuide={handleUpdateGuide}
+                  onUpdateHotelReservation={handleUpdateHotelReservation}
+                  onUpdateTransportReservation={handleUpdateTransportReservation}
+                  onAddPaymentRecord={handleAddPaymentRecord}
+                  onSubmitFeedback={handleSubmitFeedback}
+                  onUpdateSettings={(newSettings) => setAppSettings(newSettings)}
+                  onResetSettings={() => setAppSettings(DEFAULT_SETTINGS)}
+                />
+              )}
+            </main>
+
+            <footer 
+              className="border-t border-white/[0.06] py-5 text-xs text-sand-muted transition-colors duration-300"
+              style={{ backgroundColor: 'var(--admin-bg-base, #070B0E)' }}
+            >
+              <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div>
+                  <strong className="text-ivory">{appSettings.agency.companyName}</strong> — Operator Command Center ({appSettings.agency.accreditationNo})
+                </div>
+                <div className="flex items-center gap-3 text-[11px] text-sand-muted">
+                  <button
+                    onClick={() => setIsCapstoneModalOpen(true)}
+                    className="hover:text-ivory transition-colors"
+                    style={{ color: 'var(--admin-accent, #F26A4F)' }}
+                  >
+                    System Specs
+                  </button>
+                  <span>•</span>
+                  <button
+                    onClick={() => setViewMode('customer')}
+                    className="text-sand-muted hover:text-ivory transition-colors"
+                  >
+                    Return to Public Website
+                  </button>
+                  <span>•</span>
+                  <button
+                    onClick={handleLogout}
+                    className="text-rose-400 hover:underline transition-colors"
+                  >
+                    Sign Out
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-3 text-[11px] text-sand-muted">
-                <button
-                  onClick={() => setIsCapstoneModalOpen(true)}
-                  className="hover:text-ivory transition-colors"
-                  style={{ color: 'var(--admin-accent, #F26A4F)' }}
-                >
-                  System Specs
-                </button>
-                <span>•</span>
-                <button
-                  onClick={() => setViewMode('customer')}
-                  className="text-sand-muted hover:text-ivory transition-colors"
-                >
-                  Return to Public Website
-                </button>
-                <span>•</span>
-                <button
-                  onClick={handleLogout}
-                  className="text-rose-400 hover:underline transition-colors"
-                >
-                  Sign Out
-                </button>
-              </div>
-            </div>
-          </footer>
-        </div>
+            </footer>
+          </div>
+        </SessionInactivityGuard>
       )}
 
       {/* Admin Login Modal (Accessible from discreet staff access trigger) */}
@@ -418,11 +494,32 @@ export default function App() {
         onLoginSuccess={handleLoginSuccess}
       />
 
+      {/* Global Live Weather Radar Modal */}
+      <GlobalWeatherRadarModal
+        isOpen={isWeatherRadarOpen}
+        onClose={() => setIsWeatherRadarOpen(false)}
+      />
+
       {/* Capstone Info Modal */}
       <CapstoneInfoModal
         isOpen={isCapstoneModalOpen}
         onClose={() => setIsCapstoneModalOpen(false)}
         onResetData={handleResetData}
+      />
+
+      {/* Legal & Governance Compliance Modal (ISO/IEC 27001 & ISO/IEC 40500) */}
+      <LegalComplianceModal
+        isOpen={isLegalModalOpen}
+        initialTab={legalModalTab}
+        onClose={() => setIsLegalModalOpen(false)}
+        onOpenCookiePreferences={() => setIsCookiePreferencesOpen(true)}
+      />
+
+      {/* Cookie & Telemetry Consent Manager */}
+      <CookieConsentBanner
+        onOpenLegalModal={(tab) => handleOpenLegalPolicy(tab)}
+        forceOpenPreferences={isCookiePreferencesOpen}
+        onClosePreferencesModal={() => setIsCookiePreferencesOpen(false)}
       />
     </div>
   );

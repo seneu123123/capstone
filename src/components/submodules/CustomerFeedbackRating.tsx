@@ -241,7 +241,24 @@ export const CustomerFeedbackRating: React.FC<CustomerFeedbackRatingProps> = ({
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   className="w-full bg-[#070B0E] border border-white/[0.08] rounded-xl px-4 py-2.5 text-xs text-ivory placeholder-sand-muted/50 focus:outline-none focus:border-sunset-coral"
+                  aria-label="Feedback review and impressions"
                 />
+              </div>
+
+              {/* Data Privacy Consent for Feedback Publication */}
+              <div className="bg-[#070B0E] border border-white/[0.08] rounded-xl p-3 space-y-2">
+                <label className="flex items-start gap-2.5 cursor-pointer text-sand-muted text-xs font-light leading-relaxed">
+                  <input
+                    type="checkbox"
+                    required
+                    defaultChecked
+                    className="mt-0.5 w-3.5 h-3.5 rounded border-white/20 text-sunset-coral focus:ring-sunset-coral bg-[#0B1014] shrink-0"
+                    aria-label="Consent to publish review"
+                  />
+                  <span>
+                    I consent to the publication of this review and my traveler first name on the Holiday Archipelago portal in accordance with the Data Privacy Policy.
+                  </span>
+                </label>
               </div>
 
               <div className="pt-3 border-t border-white/[0.08] flex justify-end gap-3">
@@ -249,12 +266,14 @@ export const CustomerFeedbackRating: React.FC<CustomerFeedbackRatingProps> = ({
                   type="button"
                   onClick={() => setIsSubmitModalOpen(false)}
                   className="px-4 py-2 rounded-full text-xs text-sand-muted hover:text-ivory"
+                  aria-label="Cancel submitting review"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-full text-xs font-medium bg-sunset-coral text-white shadow-lg shadow-sunset-coral/20"
+                  className="px-5 py-2 rounded-full text-xs font-medium bg-sunset-coral text-white shadow-lg shadow-sunset-coral/20 hover:bg-[#ff765b] transition"
+                  aria-label="Post traveler review"
                 >
                   Post Review
                 </button>

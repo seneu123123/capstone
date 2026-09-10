@@ -63,12 +63,13 @@ export const ClientExpeditions: React.FC<ClientExpeditionsProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
           {filteredPackages.map((pkg, idx) => {
             const localFallbacks = [
-              '/images/pac1.webp',
+              '/images/elnido.jpg',
               '/images/bohol.jpg',
+              '/images/siargao.png',
+              '/images/coron.webp',
+              '/images/pac1.webp',
               '/images/pac2.avif',
-              '/images/pac3.jpg',
-              '/images/palawan_paradise.svg',
-              '/images/siargao_surf.svg'
+              '/images/pac3.jpg'
             ];
             const fallbackImages = [
               'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=1200&q=80',
@@ -98,7 +99,9 @@ export const ClientExpeditions: React.FC<ClientExpeditionsProps> = ({
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = fallbackImages[idx % fallbackImages.length];
                     }}
-                    alt={pkg.title}
+                    alt={`${pkg.title} - ${pkg.destination} tour expedition`}
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
                     className="w-full h-full object-cover img-editorial-card group-hover:scale-105 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0B1014] via-[#0B1014]/20 to-transparent pointer-events-none" />

@@ -253,7 +253,9 @@ export const TourPackageManagement: React.FC<TourPackageManagementProps> = ({
                     (e.target as HTMLImageElement).src =
                       'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=1200&q=80';
                   }}
-                  alt={pkg.title}
+                  alt={`${pkg.title} (${pkg.destination}) tour package cover`}
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
                   className="w-full h-full object-cover img-editorial-card"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0B1014] via-transparent to-transparent pointer-events-none" />

@@ -4,9 +4,10 @@ import { ArrowDown } from 'lucide-react';
 interface ClientHeroProps {
   onExploreClick: () => void;
   onBookClick: () => void;
+  onWeatherClick?: () => void;
 }
 
-export const ClientHero: React.FC<ClientHeroProps> = ({ onExploreClick, onBookClick }) => {
+export const ClientHero: React.FC<ClientHeroProps> = ({ onExploreClick, onBookClick, onWeatherClick }) => {
   const scrollToNext = () => {
     const ethos = document.getElementById('ethos');
     if (ethos) {
@@ -30,7 +31,8 @@ export const ClientHero: React.FC<ClientHeroProps> = ({ onExploreClick, onBookCl
             (e.target as HTMLImageElement).src =
               'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=2400&q=85';
           }}
-          alt="Palawan archipelago limestone karst lagoons"
+          alt="Palawan archipelago limestone karst lagoons at twilight"
+          referrerPolicy="no-referrer"
           className="w-full h-full object-cover object-center opacity-40 scale-105"
         />
         {/* Layered Gradient Overlays for Moody Contrast */}
@@ -78,6 +80,16 @@ export const ClientHero: React.FC<ClientHeroProps> = ({ onExploreClick, onBookCl
           >
             <span>View Packages</span>
           </button>
+
+          {onWeatherClick && (
+            <button
+              onClick={onWeatherClick}
+              className="inline-flex items-center justify-center gap-2 text-cyan-300 hover:text-white px-6 py-4 rounded-full text-xs font-medium tracking-[0.15em] uppercase bg-cyan-950/40 hover:bg-cyan-900/50 border border-cyan-500/30 transition-all duration-300 backdrop-blur-sm shadow-lg shadow-cyan-950/50"
+              id="hero-weather-radar-btn"
+            >
+              <span>Explore Weather</span>
+            </button>
+          )}
         </div>
       </div>
 

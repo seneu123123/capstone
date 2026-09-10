@@ -15,8 +15,14 @@ import {
   ExternalLink,
   ShieldCheck,
   UserCheck,
-  Sparkles
+  Sparkles,
+  Users,
+  Shield,
+  Ship,
+  Receipt,
+  ClipboardCheck
 } from 'lucide-react';
+import { hasTabAccess, findStaffAccountByEmail, getRoleBadgeStyle } from '../../utils/rbac';
 
 interface AdminNavbarProps {
   activeTab: SubmoduleTab;
@@ -39,6 +45,12 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
   adminEmail,
   adminRole
 }) => {
+  const staffAccount = findStaffAccountByEmail(adminEmail);
+  const userContext = staffAccount || { email: adminEmail, role: adminRole };
+  const badgeStyle = getRoleBadgeStyle(adminRole);
+
+  const canAccess = (tab: SubmoduleTab) => hasTabAccess(userContext, tab);
+  const isSuperAdmin = adminRole === 'Super Admin' || adminEmail === 'karlljacob8@gmail.com';
   return (
     <header className="sticky top-0 z-40 bg-[#070B0E]/95 backdrop-blur-md border-b border-white/[0.08] text-ivory shadow-2xl">
       {/* Top Header Bar */}
@@ -86,18 +98,13 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
 
             <div className="hidden sm:flex items-center gap-2.5 px-3.5 py-1.5 bg-[#0B1014] rounded-full border border-white/[0.08] text-xs font-sans-body">
               <div 
-                className="w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] border"
-                style={{
-                  backgroundColor: 'rgba(var(--admin-accent-rgb, 242, 106, 79), 0.2)',
-                  color: 'var(--admin-accent, #F26A4F)',
-                  borderColor: 'rgba(var(--admin-accent-rgb, 242, 106, 79), 0.4)',
-                }}
+                className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-[10px] border ${badgeStyle.bg} ${badgeStyle.text} ${badgeStyle.border}`}
               >
-                OP
+                {adminRole.includes('Super') ? 'SA' : adminRole.includes('Finance') ? 'FO' : adminRole.includes('Guide') ? 'TG' : 'OP'}
               </div>
               <div className="text-left">
                 <div className="font-medium text-ivory text-xs line-clamp-1">{adminEmail}</div>
-                <div className="text-[10px] text-sand-muted">{adminRole}</div>
+                <div className={`text-[10px] font-medium ${badgeStyle.text}`}>{adminRole}</div>
               </div>
             </div>
 
@@ -113,148 +120,238 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
         </div>
       </div>
 
-      {/* Submodule Navigation Tabs with Proper Functional Names */}
+      {/* Submodule Navigation Tabs with Proper Functional Names & RBAC Filtering */}
       <div className="bg-[#0B1014]/90 border-t border-white/[0.06]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex items-center space-x-1.5 overflow-x-auto py-2.5 scrollbar-thin scrollbar-thumb-white/10">
             {/* Overview / Admin Dashboard */}
-            <button
-              onClick={() => onTabChange('overview')}
-              style={activeTab === 'overview' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
-                activeTab === 'overview'
-                  ? 'text-white font-medium shadow-md shadow-black/40'
-                  : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
-              }`}
-            >
-              <Briefcase className="w-3.5 h-3.5" />
-              <span>Operations Dashboard</span>
-            </button>
+            {canAccess('overview') && (
+              <button
+                onClick={() => onTabChange('overview')}
+                style={activeTab === 'overview' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                  activeTab === 'overview'
+                    ? 'text-white font-medium shadow-md shadow-black/40'
+                    : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
+                }`}
+              >
+                <Briefcase className="w-3.5 h-3.5" />
+                <span>Operations Dashboard</span>
+              </button>
+            )}
 
             {/* Tour Package Management */}
-            <button
-              onClick={() => onTabChange('packages')}
-              style={activeTab === 'packages' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
-                activeTab === 'packages'
-                  ? 'text-white font-medium shadow-md shadow-black/40'
-                  : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
-              }`}
-            >
-              <Layers className="w-3.5 h-3.5" />
-              <span>Tour Package Management</span>
-            </button>
+            {canAccess('packages') && (
+              <button
+                onClick={() => onTabChange('packages')}
+                style={activeTab === 'packages' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                  activeTab === 'packages'
+                    ? 'text-white font-medium shadow-md shadow-black/40'
+                    : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>Tour Package Management</span>
+              </button>
+            )}
+
+            {/* Field Guide Roll Call & Check-In */}
+            {canAccess('guide_roster') && (
+              <button
+                onClick={() => onTabChange('guide_roster')}
+                style={activeTab === 'guide_roster' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                  activeTab === 'guide_roster'
+                    ? 'text-white font-medium shadow-md shadow-black/40'
+                    : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
+                }`}
+              >
+                <ClipboardCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Field Guide Roll Call</span>
+              </button>
+            )}
 
             {/* Passenger Manifest */}
-            <button
-              onClick={() => onTabChange('bookings')}
-              style={activeTab === 'bookings' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
-                activeTab === 'bookings'
-                  ? 'text-white font-medium shadow-md shadow-black/40'
-                  : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
-              }`}
-            >
-              <UserCheck className="w-3.5 h-3.5" />
-              <span>Booking & Passenger Manifest</span>
-              {bookingCount > 0 && (
-                <span 
-                  className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/60 font-mono font-bold border border-white/10"
-                  style={{ color: 'var(--admin-accent, #F26A4F)' }}
-                >
-                  {bookingCount}
+            {canAccess('bookings') && (
+              <button
+                onClick={() => onTabChange('bookings')}
+                style={activeTab === 'bookings' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                  activeTab === 'bookings'
+                    ? 'text-white font-medium shadow-md shadow-black/40'
+                    : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
+                }`}
+              >
+                <UserCheck className="w-3.5 h-3.5" />
+                <span>
+                  {adminRole.includes('Finance') 
+                    ? 'Billing & Financial Manifest' 
+                    : adminRole.includes('Guide') 
+                    ? 'My Passenger Manifest' 
+                    : 'Booking & Passenger Manifest'}
                 </span>
-              )}
-            </button>
+                {bookingCount > 0 && (
+                  <span 
+                    className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/60 font-mono font-bold border border-white/10"
+                    style={{ color: 'var(--admin-accent, #F26A4F)' }}
+                  >
+                    {bookingCount}
+                  </span>
+                )}
+              </button>
+            )}
 
             {/* Itineraries & Schedules */}
-            <button
-              onClick={() => onTabChange('itineraries')}
-              style={activeTab === 'itineraries' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
-                activeTab === 'itineraries'
-                  ? 'text-white font-medium shadow-md shadow-black/40'
-                  : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
-              }`}
-            >
-              <Calendar className="w-3.5 h-3.5" />
-              <span>Itinerary & Schedule Management</span>
-            </button>
+            {canAccess('itineraries') && (
+              <button
+                onClick={() => onTabChange('itineraries')}
+                style={activeTab === 'itineraries' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                  activeTab === 'itineraries'
+                    ? 'text-white font-medium shadow-md shadow-black/40'
+                    : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
+                }`}
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                <span>{adminRole.includes('Guide') ? 'My Assigned Tours' : 'Itinerary & Schedule Management'}</span>
+              </button>
+            )}
 
             {/* Hotel & Transport Allocations */}
-            <button
-              onClick={() => onTabChange('reservations')}
-              style={activeTab === 'reservations' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
-                activeTab === 'reservations'
-                  ? 'text-white font-medium shadow-md shadow-black/40'
-                  : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
-              }`}
-            >
-              <Hotel className="w-3.5 h-3.5" />
-              <span>Hotel & Transport Logistics</span>
-            </button>
+            {canAccess('reservations') && (
+              <button
+                onClick={() => onTabChange('reservations')}
+                style={activeTab === 'reservations' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                  activeTab === 'reservations'
+                    ? 'text-white font-medium shadow-md shadow-black/40'
+                    : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
+                }`}
+              >
+                <Hotel className="w-3.5 h-3.5" />
+                <span>Hotel & Transport Logistics</span>
+              </button>
+            )}
+
+            {/* Fleet & Vessel Dispatch Board */}
+            {canAccess('fleet_dispatch') && (
+              <button
+                onClick={() => onTabChange('fleet_dispatch')}
+                style={activeTab === 'fleet_dispatch' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                  activeTab === 'fleet_dispatch'
+                    ? 'text-white font-medium shadow-md shadow-black/40'
+                    : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
+                }`}
+              >
+                <Ship className="w-3.5 h-3.5 text-blue-400" />
+                <span>Fleet & Vessel Dispatch</span>
+              </button>
+            )}
 
             {/* Payments & Invoices */}
-            <button
-              onClick={() => onTabChange('payments')}
-              style={activeTab === 'payments' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
-                activeTab === 'payments'
-                  ? 'text-white font-medium shadow-md shadow-black/40'
-                  : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
-              }`}
-            >
-              <CreditCard className="w-3.5 h-3.5" />
-              <span>Payment & Invoice Management</span>
-              {pendingPaymentCount > 0 && (
-                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
-                  {pendingPaymentCount}
-                </span>
-              )}
-            </button>
+            {canAccess('payments') && (
+              <button
+                onClick={() => onTabChange('payments')}
+                style={activeTab === 'payments' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                  activeTab === 'payments'
+                    ? 'text-white font-medium shadow-md shadow-black/40'
+                    : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
+                }`}
+              >
+                <CreditCard className="w-3.5 h-3.5" />
+                <span>Payment & Invoice Management</span>
+                {pendingPaymentCount > 0 && (
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
+                    {pendingPaymentCount}
+                  </span>
+                )}
+              </button>
+            )}
+
+            {/* Fiscal Reconciliation & Payouts */}
+            {canAccess('reconciliation') && (
+              <button
+                onClick={() => onTabChange('reconciliation')}
+                style={activeTab === 'reconciliation' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                  activeTab === 'reconciliation'
+                    ? 'text-white font-medium shadow-md shadow-black/40'
+                    : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
+                }`}
+              >
+                <Receipt className="w-3.5 h-3.5 text-amber-300" />
+                <span>Fiscal Reconciliation</span>
+              </button>
+            )}
 
             {/* Feedback & Ratings */}
-            <button
-              onClick={() => onTabChange('feedback')}
-              style={activeTab === 'feedback' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
-                activeTab === 'feedback'
-                  ? 'text-white font-medium shadow-md shadow-black/40'
-                  : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
-              }`}
-            >
-              <Star className="w-3.5 h-3.5" />
-              <span>Customer Feedback & Ratings</span>
-            </button>
+            {canAccess('feedback') && (
+              <button
+                onClick={() => onTabChange('feedback')}
+                style={activeTab === 'feedback' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                  activeTab === 'feedback'
+                    ? 'text-white font-medium shadow-md shadow-black/40'
+                    : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
+                }`}
+              >
+                <Star className="w-3.5 h-3.5" />
+                <span>Customer Feedback & Ratings</span>
+              </button>
+            )}
 
             {/* Laravel Hub */}
-            <button
-              onClick={() => onTabChange('laravel_integration')}
-              style={activeTab === 'laravel_integration' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
-                activeTab === 'laravel_integration'
-                  ? 'text-white font-medium shadow-md shadow-black/40'
-                  : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
-              }`}
-            >
-              <Server className="w-3.5 h-3.5" />
-              <span>Laravel Integration Hub</span>
-            </button>
+            {canAccess('laravel_integration') && (
+              <button
+                onClick={() => onTabChange('laravel_integration')}
+                style={activeTab === 'laravel_integration' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                  activeTab === 'laravel_integration'
+                    ? 'text-white font-medium shadow-md shadow-black/40'
+                    : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
+                }`}
+              >
+                <Server className="w-3.5 h-3.5" />
+                <span>Laravel Integration Hub</span>
+              </button>
+            )}
 
             {/* Settings */}
-            <button
-              onClick={() => onTabChange('settings')}
-              style={activeTab === 'settings' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
-                activeTab === 'settings'
-                  ? 'text-white font-medium shadow-md shadow-black/40'
-                  : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
-              }`}
-            >
-              <SettingsIcon className="w-3.5 h-3.5" />
-              <span>System & Agency Settings</span>
-            </button>
+            {canAccess('settings') && (
+              <button
+                onClick={() => onTabChange('settings')}
+                style={activeTab === 'settings' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                  activeTab === 'settings'
+                    ? 'text-white font-medium shadow-md shadow-black/40'
+                    : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
+                }`}
+              >
+                <SettingsIcon className="w-3.5 h-3.5" />
+                <span>System & Agency Settings</span>
+              </button>
+            )}
+
+            {/* Staff & RBAC Governance Center (Super Admin Clearance) */}
+            {canAccess('rbac') && (
+              <button
+                onClick={() => onTabChange('rbac')}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                  activeTab === 'rbac'
+                    ? 'bg-rose-600 text-white font-medium shadow-md shadow-rose-900/50'
+                    : 'text-rose-300/80 hover:text-rose-200 hover:bg-rose-500/10 border border-rose-500/20'
+                }`}
+              >
+                <Users className="w-3.5 h-3.5 text-rose-400" />
+                <span>Staff & RBAC Governance</span>
+                <span className="px-1.5 py-0.2 rounded-full text-[9px] bg-rose-500/20 text-rose-300 font-mono font-bold uppercase">
+                  Admin
+                </span>
+              </button>
+            )}
           </nav>
         </div>
       </div>

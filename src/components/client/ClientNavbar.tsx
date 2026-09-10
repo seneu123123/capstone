@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Compass, Menu, X, Shield, Search, UserCheck } from 'lucide-react';
+import { Compass, Menu, X, Search, CloudSun, Lock } from 'lucide-react';
 
 interface ClientNavbarProps {
   onOpenBooking: (packageId?: string) => void;
   onOpenTracker: () => void;
-  onOpenAdminAuth: () => void;
+  onOpenAdminAuth?: () => void;
+  onOpenWeatherRadar?: () => void;
   isStaffLoggedIn?: boolean;
   onOpenAdminPortal?: () => void;
 }
@@ -12,6 +13,7 @@ interface ClientNavbarProps {
 export const ClientNavbar: React.FC<ClientNavbarProps> = ({
   onOpenBooking,
   onOpenTracker,
+  onOpenWeatherRadar,
   onOpenAdminAuth,
   isStaffLoggedIn,
   onOpenAdminPortal,
@@ -35,6 +37,11 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
     }
   };
 
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    scrollToSection('hero');
+  };
+
   return (
     <header
       id="main-navigation"
@@ -45,15 +52,16 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 sm:px-8 flex items-center justify-between">
-        {/* Brand Logo with Compass Icon */}
+        {/* Brand Logo with Compass Icon & Secret Discreet Multi-click Staff Ingress */}
         <a
           href="#hero"
           onClick={(e) => {
             e.preventDefault();
-            scrollToSection('hero');
+            handleLogoClick(e);
           }}
-          className="flex items-center gap-3 group focus:outline-none"
+          className="flex items-center gap-3 group focus:outline-none cursor-pointer select-none"
           id="brand-logo-link"
+          title="Holiday Travelers Travel and Tours Inc."
         >
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sunset-coral/20 to-sunset-coral/10 border border-sunset-coral/60 flex items-center justify-center text-sunset-coral group-hover:scale-105 group-hover:border-sunset-coral transition-all duration-300 shadow-md shadow-sunset-coral/10">
             <Compass className="w-5 h-5 group-hover:rotate-45 transition-transform duration-500" />
@@ -91,6 +99,16 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
           >
             Ethos
           </button>
+          {onOpenWeatherRadar && (
+            <button
+              onClick={onOpenWeatherRadar}
+              className="text-sm font-sans-body text-cyan-300 hover:text-cyan-200 transition-colors tracking-wide flex items-center gap-1.5"
+              id="nav-weather-radar-btn"
+            >
+              <CloudSun className="w-4 h-4 text-cyan-400" />
+              Weather Radar
+            </button>
+          )}
           <button
             onClick={onOpenTracker}
             className="text-sm font-sans-body text-sand-muted hover:text-ivory transition-colors tracking-wide flex items-center gap-1.5"
@@ -102,24 +120,26 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
         </nav>
 
         {/* Action CTAs */}
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-3">
           {isStaffLoggedIn ? (
             <button
               onClick={onOpenAdminPortal}
-              className="flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 text-xs font-medium tracking-wide transition-all"
-              id="nav-admin-active-btn"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium bg-sunset-coral/15 hover:bg-sunset-coral/25 text-sunset-coral border border-sunset-coral/40 transition-all shadow-sm"
+              title="Open Admin Operations Tower"
+              id="nav-admin-portal-active-btn"
             >
-              <UserCheck className="w-3.5 h-3.5" />
-              <span>Operations Portal</span>
+              <Lock className="w-3.5 h-3.5" />
+              <span>Admin Portal</span>
             </button>
           ) : (
             <button
               onClick={onOpenAdminAuth}
-              title="Staff & Operator Login"
-              className="text-sand-muted hover:text-ivory p-2 rounded-full hover:bg-white/5 transition-colors"
-              id="nav-staff-login-trigger"
+              className="p-2 text-sand-muted hover:text-ivory hover:bg-white/5 rounded-full transition-colors"
+              title="Staff & Operator Login (or Ctrl+Shift+A)"
+              id="nav-staff-login-btn"
+              aria-label="Staff Login"
             >
-              <Shield className="w-4 h-4 opacity-60 hover:opacity-100" />
+              <Lock className="w-4 h-4 text-sand-muted hover:text-sunset-coral transition-colors" />
             </button>
           )}
 
@@ -167,6 +187,18 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
           >
             Our Ethos
           </button>
+          {onOpenWeatherRadar && (
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenWeatherRadar();
+              }}
+              className="block w-full text-left py-2 text-cyan-300 text-base font-sans-body flex items-center gap-2"
+            >
+              <CloudSun className="w-4 h-4 text-cyan-400" />
+              Global Weather Radar
+            </button>
+          )}
           <button
             onClick={() => {
               setMobileMenuOpen(false);
@@ -177,6 +209,30 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
             🔍 Track Guest Voucher
           </button>
 
+          {isStaffLoggedIn ? (
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                if (onOpenAdminPortal) onOpenAdminPortal();
+              }}
+              className="block w-full text-left py-2 text-sunset-coral text-base font-sans-body flex items-center gap-2"
+            >
+              <Lock className="w-4 h-4" />
+              Enter Admin Portal
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                if (onOpenAdminAuth) onOpenAdminAuth();
+              }}
+              className="block w-full text-left py-2 text-sand-muted hover:text-ivory text-base font-sans-body flex items-center gap-2"
+            >
+              <Lock className="w-4 h-4" />
+              Staff & Operator Login
+            </button>
+          )}
+
           <div className="pt-4 border-t border-white/10 flex flex-col gap-3">
             <button
               onClick={() => {
@@ -186,16 +242,6 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({
               className="w-full bg-sunset-coral text-white py-3 rounded-full text-sm font-medium tracking-wide text-center"
             >
               Begin Journey
-            </button>
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                isStaffLoggedIn && onOpenAdminPortal ? onOpenAdminPortal() : onOpenAdminAuth();
-              }}
-              className="w-full text-sand-muted text-xs py-2 text-center flex items-center justify-center gap-1.5"
-            >
-              <Shield className="w-3.5 h-3.5" />
-              {isStaffLoggedIn ? 'Open Operations Portal' : 'Staff Access'}
             </button>
           </div>
         </div>

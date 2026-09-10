@@ -153,10 +153,85 @@ export type SubmoduleTab =
   | 'bookings'
   | 'itineraries'
   | 'reservations'
+  | 'fleet_dispatch'
   | 'payments'
+  | 'reconciliation'
+  | 'guide_roster'
   | 'feedback'
   | 'laravel_integration'
-  | 'settings';
+  | 'settings'
+  | 'rbac';
+
+export type StaffRole = 
+  | 'Super Admin' 
+  | 'Tour Operations Manager' 
+  | 'Finance Officer' 
+  | 'Tour Guide' 
+  | 'Custom Staff';
+
+export type GranularPermission = 
+  | 'packages.view'
+  | 'packages.create'
+  | 'packages.edit'
+  | 'packages.delete'
+  | 'bookings.view_manifest'
+  | 'bookings.update_status'
+  | 'bookings.export_csv'
+  | 'bookings.delete'
+  | 'logistics.dispatch_guide'
+  | 'logistics.manage_hotels'
+  | 'logistics.manage_transport'
+  | 'fleet.dispatch_vessels'
+  | 'finance.view_payments'
+  | 'finance.verify_payment'
+  | 'finance.issue_refund'
+  | 'finance.export_invoices'
+  | 'finance.reconciliation'
+  | 'guide.rollcall'
+  | 'feedback.view'
+  | 'feedback.moderate'
+  | 'settings.view'
+  | 'settings.update'
+  | 'rbac.view_staff'
+  | 'rbac.create_staff'
+  | 'rbac.edit_roles'
+  | 'rbac.reset_passwords'
+  | 'rbac.delete_staff'
+  | 'rbac.view_audit_logs';
+
+export interface StaffAccount {
+  id: string;
+  fullName: string;
+  email: string;
+  role: StaffRole;
+  password?: string;
+  passwordHash?: string;
+  passwordSalt?: string;
+  requiresPasswordChange?: boolean;
+  status: 'Active' | 'Suspended';
+  createdAt: string;
+  lastLogin?: string;
+  allowedTabs?: SubmoduleTab[];
+  granularPermissions?: GranularPermission[];
+  totpSecret?: string;
+  twoFactorEnabled?: boolean;
+  backupCodes?: string[];
+  phoneNumber?: string;
+  notes?: string;
+}
+
+export interface SecurityAuditLog {
+  id: string;
+  timestamp: string;
+  actorEmail: string;
+  action: string;
+  targetEmail?: string;
+  details: string;
+  severity: 'info' | 'warning' | 'critical';
+  prevHash?: string;
+  hash?: string;
+  ipAddress?: string;
+}
 
 export interface AgencyBrandingSettings {
   companyName: string;

@@ -15,7 +15,7 @@ export const INITIAL_TOUR_PACKAGES: TourPackage[] = [
     featured: true,
     rating: 4.9,
     reviewCount: 38,
-    bannerUrl: '/images/palawan_paradise.svg',
+    bannerUrl: '/images/elnido.jpg',
     inclusions: [
       '3-Night Hotel Accommodation (4-Star Beachfront)',
       'Daily Buffet Breakfast & 2 Seafood Beach Lunches',
@@ -92,7 +92,7 @@ export const INITIAL_TOUR_PACKAGES: TourPackage[] = [
     featured: true,
     rating: 4.8,
     reviewCount: 24,
-    bannerUrl: '/images/bohol.jpg',
+    bannerUrl: '/images/pac3.jpg',
     inclusions: [
       '2-Night Resort Accommodation at Panglao Island',
       'Loboc River Cruise Buffet Lunch with Live Cultural Music',
@@ -156,7 +156,7 @@ export const INITIAL_TOUR_PACKAGES: TourPackage[] = [
     featured: false,
     rating: 4.9,
     reviewCount: 19,
-    bannerUrl: '/images/siargao_surf.svg',
+    bannerUrl: '/images/siargao.png',
     inclusions: [
       '3-Night Boutique Surf Resort Stay in General Luna',
       'Tri-Island Tour (Naked Island, Daku Island, Guyam Island)',
@@ -353,6 +353,139 @@ export const INITIAL_BOOKINGS: Booking[] = [
       ],
       payments: [
         { id: 'pmt-03', date: '2026-07-22', amount: 14700, method: 'Credit Card', referenceNo: 'CC-901238121', status: 'Verified', notes: '50% Confirmation Deposit' }
+      ]
+    }
+  },
+  {
+    id: 'bk-1003',
+    bookingRef: 'TT-2026-9281',
+    tourPackageId: 'pkg-03',
+    tourTitle: 'Batanes Heritage & Marlboro Hills Eco-Cultural Journey',
+    destination: 'Batanes, Philippines',
+    customer: {
+      fullName: 'Dr. Christopher Gomez',
+      email: 'dr.gomez@medcenter.ph',
+      phone: '+63 920 771 9922',
+      emergencyContact: 'Patricia Gomez (+63 920 771 9923)',
+      nationality: 'Filipino'
+    },
+    passengers: [
+      { id: 'p6', fullName: 'Dr. Christopher Gomez', age: 42, gender: 'Male', passportOrId: 'P4819201C', specialRequirements: 'Low-sodium meals requested' },
+      { id: 'p7', fullName: 'Patricia Gomez', age: 39, gender: 'Female', passportOrId: 'P4819202D' }
+    ],
+    travelDate: '2026-09-18',
+    numPax: 2,
+    totalPrice: 42000,
+    depositRequired: 21000,
+    bookingStatus: 'Confirmed',
+    paymentStatus: 'Paid',
+    createdAt: '2026-08-01',
+    assignedGuide: 'Michael Baynosa (+63 920 456 7890)',
+    specialInstructions: 'Cultural photography expedition. Requires sunrise lighthouse access.',
+    hotelReservation: {
+      id: 'htl-503',
+      hotelName: 'Fundacion Pacita Batanes Nature Lodge',
+      roomType: 'Traditional Stone Suite',
+      checkInDate: '2026-09-18',
+      checkOutDate: '2026-09-22',
+      nights: 4,
+      voucherCode: 'HTL-BAT-9281',
+      status: 'Confirmed',
+      contactPhone: '+63 917 888 1234',
+      notes: 'Scenic hillside cottage with Basco lighthouse view'
+    },
+    transportReservation: {
+      id: 'trp-703',
+      vehicleType: 'Rugged Coastal 4x4 Coaster',
+      driverName: 'Kuya Lito Valiente',
+      driverContact: '+63 920 882 1199',
+      plateNumber: 'BAT-1102',
+      pickupLocation: 'Basco Airport (BSO)',
+      dropoffLocation: 'Fundacion Pacita',
+      pickupTime: '09:15 AM',
+      status: 'Scheduled',
+      notes: 'Driver will meet guests at terminal exit'
+    },
+    invoice: {
+      id: 'inv-1003',
+      invoiceNumber: 'INV-2026-9281',
+      issueDate: '2026-08-01',
+      dueDate: '2026-08-15',
+      totalAmount: 42000,
+      amountPaid: 42000,
+      balanceDue: 0,
+      status: 'Paid',
+      items: [
+        { description: 'Batanes Heritage Eco-Cultural Journey (2 Pax)', quantity: 2, unitPrice: 21000, totalPrice: 42000 }
+      ],
+      payments: [
+        { id: 'pmt-04', date: '2026-08-01', amount: 42000, method: 'Bank Transfer', referenceNo: 'BDO-991204812', status: 'Verified', notes: 'Full Settlement via BDO Corporate' }
+      ]
+    }
+  },
+  {
+    id: 'bk-1004',
+    bookingRef: 'TT-2026-9450',
+    tourPackageId: 'pkg-04',
+    tourTitle: 'Siargao Island Surfing & Sugba Lagoon Expedition',
+    destination: 'Siargao Island, Philippines',
+    customer: {
+      fullName: 'Jessica Tan',
+      email: 'jessica.tan@singapore-travels.sg',
+      phone: '+65 9123 4567',
+      emergencyContact: 'Marcus Tan (+65 9123 4568)',
+      nationality: 'Singaporean'
+    },
+    passengers: [
+      { id: 'p8', fullName: 'Jessica Tan', age: 27, gender: 'Female', passportOrId: 'SG-E8192018', specialRequirements: 'Beginner surfing lesson instructor needed' }
+    ],
+    travelDate: '2026-09-25',
+    numPax: 1,
+    totalPrice: 16500,
+    depositRequired: 8250,
+    bookingStatus: 'Confirmed',
+    paymentStatus: 'Paid',
+    createdAt: '2026-08-05',
+    assignedGuide: 'Michael Baynosa (+63 920 456 7890)',
+    specialInstructions: 'Solo traveler. Board rental included.',
+    hotelReservation: {
+      id: 'htl-504',
+      hotelName: 'Nay Palad Hideaway Siargao',
+      roomType: 'Deluxe Garden Villa',
+      checkInDate: '2026-09-25',
+      checkOutDate: '2026-09-28',
+      nights: 3,
+      voucherCode: 'HTL-SIA-9450',
+      status: 'Confirmed',
+      contactPhone: '+63 917 555 9012',
+      notes: 'Late check-in requested'
+    },
+    transportReservation: {
+      id: 'trp-704',
+      vehicleType: 'Toyota Hilux Island Cruiser',
+      driverName: 'Kuya Jomar',
+      driverContact: '+63 918 333 8811',
+      plateNumber: 'SIA-7712',
+      pickupLocation: 'Sayak Airport (IAO)',
+      dropoffLocation: 'Nay Palad Hideaway',
+      pickupTime: '11:00 AM',
+      status: 'Scheduled',
+      notes: 'Vehicle equipped with surfboard racks'
+    },
+    invoice: {
+      id: 'inv-1004',
+      invoiceNumber: 'INV-2026-9450',
+      issueDate: '2026-08-05',
+      dueDate: '2026-08-20',
+      totalAmount: 16500,
+      amountPaid: 16500,
+      balanceDue: 0,
+      status: 'Paid',
+      items: [
+        { description: 'Siargao Island Surfing Expedition (1 Pax)', quantity: 1, unitPrice: 16500, totalPrice: 16500 }
+      ],
+      payments: [
+        { id: 'pmt-05', date: '2026-08-05', amount: 16500, method: 'PayMaya', referenceNo: 'MY-119204912', status: 'Verified', notes: 'Full Settlement via Maya QR' }
       ]
     }
   }

@@ -70,7 +70,9 @@ export const ImageWithLoader: React.FC<ImageWithLoaderProps> = ({
       {/* Actual Image Element */}
       <img
         src={isError ? generateFallbackSvg() : src}
-        alt={alt}
+        alt={alt || 'Holiday Archipelago expedition destination'}
+        loading="lazy"
+        referrerPolicy="no-referrer"
         onLoad={() => setIsLoading(false)}
         onError={() => {
           setIsLoading(false);

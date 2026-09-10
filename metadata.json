@@ -1,6 +1,6 @@
 {
   "name": "Holiday Travelers Travel and Tours Inc",
-  "description": "Capston Tour Operations & Customer Booking System for Holiday Travelers Travel and Tours Inc.",
+  "description": "Capstone Tour Operations & Customer Booking System for Holiday Travelers Travel and Tours Inc.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

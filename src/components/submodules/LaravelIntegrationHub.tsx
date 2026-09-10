@@ -35,61 +35,348 @@ export const LaravelIntegrationHub: React.FC = () => {
   const [isLoadingApi, setIsLoadingApi] = useState<boolean>(false);
 
   const fileContents: Record<string, { label: string; lang: string; code: string }> = {
+    'database/seeders/UserSeeder.php': {
+      label: 'Staff RBAC Database Seeder (database/seeders/UserSeeder.php)',
+      lang: 'php',
+      code: `<?php
+
+namespace Database\\Seeders;
+
+use Illuminate\\Database\\Seeder;
+use App\\Models\\User;
+use Illuminate\\Support\\Facades\\Hash;
+
+class UserSeeder extends Seeder
+{
+    /**
+     * Seed the 4 official Holiday Travelers staff accounts with roles and passwords.
+     * Run with: php artisan db:seed --class=UserSeeder
+     */
+    public function run(): void
+    {
+        $staffMembers = [
+            [
+                'name' => 'Karll Jacob',
+                'email' => 'karlljacob8@gmail.com',
+                'role' => 'Super Admin',
+                'password' => Hash::make('admin12345'),
+                'email_verified_at' => now(),
+            ],
+            [
+                'name' => 'Kyle Dulay',
+                'email' => 'dulaykyle15@gmail.com',
+                'role' => 'Tour Operations Manager',
+                'password' => Hash::make('admin12345'),
+                'email_verified_at' => now(),
+            ],
+            [
+                'name' => 'Ilona May Ambe',
+                'email' => 'ambeilonamay67@gmail.com',
+                'role' => 'Finance Officer',
+                'password' => Hash::make('admin12345'),
+                'email_verified_at' => now(),
+            ],
+            [
+                'name' => 'Michael Baynosa',
+                'email' => 'michaelbaynosa01@gmail.com',
+                'role' => 'Tour Guide',
+                'password' => Hash::make('admin12345'),
+                'email_verified_at' => now(),
+            ],
+        ];
+
+        foreach ($staffMembers as $staff) {
+            User::updateOrCreate(
+                ['email' => $staff['email']],
+                $staff
+            );
+        }
+    }
+}`
+    },
+    'app/Http/Controllers/AuthController.php': {
+      label: 'Production Auth Controller (app/Http/Controllers/AuthController.php)',
+      lang: 'php',
+      code: `<?php
+
+namespace App\\Http\\Controllers;
+
+use App\\Models\\User;
+use App\\Mail\\AdminOtpMail;
+use Illuminate\\Http\\Request;
+use Illuminate\\Support\\Facades\\Hash;
+use Illuminate\\Support\\Facades\\Mail;
+use Illuminate\\Support\\Facades\\Cache;
+use Illuminate\\Support\\Facades\\RateLimiter;
+use Illuminate\\Support\\Facades\\Schema;
+use Illuminate\\Support\\Str;
+
+class AuthController extends Controller
+{
+    /**
+     * Step 1: Validate operator credentials and dispatch 6-digit OTP to email
+     */
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string|min:6',
+        ]);
+
+        $email = Str::lower(trim($request->email));
+        $throttleKey = 'login-attempt:' . $email . '|' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            return response()->json([
+                'status' => 'error',
+                'message' => "Too many failed attempts. Account throttled for {$seconds} seconds."
+            ], 429);
+        }
+
+        $user = User::whereRaw('LOWER(email) = ?', [$email])->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            RateLimiter::hit($throttleKey, 900);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid email or password.'
+            ], 401);
+        }
+
+        RateLimiter::clear($throttleKey);
+
+        // Generate cryptographically secure 6-digit OTP
+        $plainOtp = sprintf("%06d", random_int(100000, 999999));
+
+        // Store OTP in database if columns exist, otherwise use Cache
+        $this->storeOtpSession($user, $email, $plainOtp);
+
+        // Dispatch Email via SMTP (AdminOtpMail with Mail::raw fallback)
+        $this->dispatchEmailOtp($user->email, $plainOtp, $request->ip() ?? '127.0.0.1', $user);
+
+        return response()->json([
+            'status' => 'otp_dispatched',
+            'message' => 'A 6-digit verification code has been dispatched to your authorized email address.',
+            'target_email' => $user->email,
+        ]);
+    }
+
+    /**
+     * Alias for admin-login endpoint
+     */
+    public function adminLogin(Request $request)
+    {
+        return $this->login($request);
+    }
+
+    /**
+     * Resend / Send 6-digit OTP
+     */
+    public function sendOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $email = Str::lower(trim($request->email));
+        $throttleKey = 'resend-otp:' . $email . '|' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 4)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            return response()->json([
+                'status' => 'error',
+                'message' => "Too many resend attempts. Please wait {$seconds} seconds."
+            ], 429);
+        }
+
+        RateLimiter::hit($throttleKey, 60);
+
+        $user = User::whereRaw('LOWER(email) = ?', [$email])->first();
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Authorized operator account not found.'
+            ], 404);
+        }
+
+        $plainOtp = sprintf("%06d", random_int(100000, 999999));
+        $this->storeOtpSession($user, $email, $plainOtp);
+        $this->dispatchEmailOtp($user->email, $plainOtp, $request->ip() ?? '127.0.0.1', $user);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Fresh 6-digit authorization code dispatched to registered mailbox.'
+        ]);
+    }
+
+    /**
+     * Step 2: Validate 6-digit OTP and issue authenticated Sanctum token
+     */
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $candidateCode = trim((string) ($request->otp ?? $request->code ?? ''));
+
+        if (strlen($candidateCode) !== 6 || !ctype_digit($candidateCode)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'The verification code must be exactly 6 numeric digits.'
+            ], 422);
+        }
+
+        $email = Str::lower(trim($request->email));
+        $user = User::whereRaw('LOWER(email) = ?', [$email])->first();
+
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Operator account not found.'
+            ], 404);
+        }
+
+        // 1. Check Database Storage (if columns exist)
+        $hasDbColumns = Schema::hasColumn('users', 'two_factor_hash');
+
+        if ($hasDbColumns && $user->two_factor_expires_at) {
+            if (now()->isAfter($user->two_factor_expires_at)) {
+                $user->forceFill(['two_factor_hash' => null, 'two_factor_expires_at' => null])->save();
+                return response()->json(['status' => 'error', 'message' => 'Verification code expired. Please request a new code.'], 422);
+            }
+
+            if (($user->two_factor_attempts ?? 0) >= 3) {
+                $user->forceFill(['two_factor_hash' => null, 'two_factor_expires_at' => null, 'two_factor_attempts' => 0])->save();
+                return response()->json(['status' => 'error', 'message' => 'Maximum OTP attempts exceeded. Code has been invalidated.'], 422);
+            }
+
+            if (!Hash::check($candidateCode, $user->two_factor_hash)) {
+                $user->increment('two_factor_attempts');
+                $remaining = 3 - ($user->two_factor_attempts ?? 1);
+                return response()->json([
+                    'status' => 'error',
+                    'message' => "Invalid verification code. ({$remaining} attempt(s) remaining)"
+                ], 422);
+            }
+
+            // Invalidate OTP immediately upon success
+            $user->forceFill([
+                'two_factor_hash' => null,
+                'two_factor_expires_at' => null,
+                'two_factor_attempts' => 0,
+            ])->save();
+        } else {
+            // 2. Cache Fallback check
+            $cachedHash = Cache::get("otp_hash_{$email}");
+            if (!$cachedHash) {
+                return response()->json(['status' => 'error', 'message' => 'No active OTP session found or code expired. Please request a new code.'], 422);
+            }
+
+            if (!Hash::check($candidateCode, $cachedHash)) {
+                return response()->json(['status' => 'error', 'message' => 'Invalid 6-digit verification code.'], 422);
+            }
+
+            Cache::forget("otp_hash_{$email}");
+        }
+
+        // Issue token (Sanctum or safe random string fallback)
+        $token = method_exists($user, 'createToken')
+            ? $user->createToken('admin-command-token', [$user->role ?? 'Tour Guide'])->plainTextToken
+            : bin2hex(random_bytes(32));
+
+        return response()->json([
+            'status' => 'authenticated',
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role ?? 'Tour Guide',
+            ]
+        ]);
+    }
+
+    /**
+     * Helper: Store OTP in DB or Cache
+     */
+    protected function storeOtpSession($user, string $email, string $plainOtp): void
+    {
+        try {
+            if (Schema::hasColumn('users', 'two_factor_hash')) {
+                $user->forceFill([
+                    'two_factor_hash' => Hash::make($plainOtp),
+                    'two_factor_expires_at' => now()->addMinutes(10),
+                    'two_factor_attempts' => 0,
+                ])->save();
+                return;
+            }
+        } catch (\\Exception $e) {
+            \\Log::warning("Could not write OTP to users table: " . $e->getMessage());
+        }
+
+        Cache::put("otp_hash_{$email}", Hash::make($plainOtp), now()->addMinutes(10));
+    }
+
+    /**
+     * Helper: Send SMTP Email with Mailable or Raw Fallback
+     */
+    protected function dispatchEmailOtp(string $recipientEmail, string $plainOtp, string $ip, $user = null): void
+    {
+        $roleName = $user->role ?? 'Authorized Staff';
+        $userName = $user->name ?? 'Staff';
+
+        try {
+            if (class_exists(AdminOtpMail::class)) {
+                Mail::to($recipientEmail)->send(new AdminOtpMail($plainOtp, $ip));
+                return;
+            }
+        } catch (\\Throwable $e) {
+            \\Log::warning('AdminOtpMail Mailable failed, using raw fallback: ' . $e->getMessage());
+        }
+
+        Mail::raw(
+            "Hello {$userName},\n\n" .
+            "Your single-use 6-digit authorization code for the Holiday Travelers Operations Terminal is:\n\n" .
+            "        {$plainOtp}\n\n" .
+            "Clearance Role: {$roleName}\n" .
+            "This verification code expires in 10 minutes.\n" .
+            "Request origin IP: {$ip}\n\n" .
+            "If you did not initiate this authorization, please notify the security team immediately.\n\n" .
+            "— Holiday Travelers Security Team",
+            function ($message) use ($recipientEmail, $plainOtp) {
+                $message->to($recipientEmail)
+                        ->subject("[HTTT-SEC] Operations Access Code: {$plainOtp}");
+            }
+        );
+    }
+}`
+    },
     'routes/api.php': {
       label: 'REST API Routes (routes/api.php)',
       lang: 'php',
       code: `<?php
+
 use Illuminate\\Support\\Facades\\Route;
-use App\\Http\\Controllers\\Api\\SanctumAuthController;
+use App\\Http\\Controllers\\AuthController;
 use App\\Http\\Controllers\\Api\\BookingController;
 
-// Public Endpoints
+// Public 2FA Authentication Endpoints
 Route::prefix('v1/auth')->group(function () {
-    Route::post('/register', [SanctumAuthController::class, 'register']);
-    Route::post('/login', [SanctumAuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/admin-login', [AuthController::class, 'login']);
+    Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+    Route::post('/send-otp', [AuthController::class, 'sendOtp']);
+    Route::post('/resend-otp', [AuthController::class, 'sendOtp']);
 });
 
 // Protected Endpoints - Laravel Sanctum Auth Guard
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
-    Route::get('/auth/me', [SanctumAuthController::class, 'me']);
     Route::get('/bookings', [BookingController::class, 'index']);
     Route::post('/bookings', [BookingController::class, 'store']);
-    Route::get('/bookings/{id}', [BookingController::class, 'show']);
     Route::patch('/bookings/{id}/status', [BookingController::class, 'updateStatus']);
 });`
-    },
-    'SanctumAuthController.php': {
-      label: 'Auth Controller (SanctumAuthController.php)',
-      lang: 'php',
-      code: `<?php
-namespace App\\Http\\Controllers\\Api;
-
-use App\\Http\\Controllers\\Controller;
-use Illuminate\\Http\\Request;
-use App\\Models\\User;
-use Illuminate\\Support\\Facades\\Hash;
-
-class SanctumAuthController extends Controller
-{
-    public function login(Request $request)
-    {
-        $request->validate(['email' => 'required|email', 'password' => 'required']);
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
-        }
-
-        $token = $user->createToken('sanctum_tour_token')->plainTextToken;
-
-        return response()->json([
-            'status' => 'success',
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'user' => $user
-        ]);
-    }
-}`
     },
     'BookingController.php': {
       label: 'Booking API Controller (BookingController.php)',

@@ -27,6 +27,8 @@ interface ClientPortalProps {
   isBookingModalOpen: boolean;
   onCloseBookingModal: () => void;
   onOpenBookingModal: (pkg?: TourPackage) => void;
+  onOpenWeatherRadar?: () => void;
+  onOpenLegalPolicy?: (tab: 'privacy' | 'terms' | 'refund') => void;
 }
 
 export const ClientPortal: React.FC<ClientPortalProps> = ({
@@ -43,6 +45,8 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
   isBookingModalOpen,
   onCloseBookingModal,
   onOpenBookingModal,
+  onOpenWeatherRadar,
+  onOpenLegalPolicy,
 }) => {
   const [showReviewsSection, setShowReviewsSection] = useState(false);
 
@@ -57,6 +61,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
           if (ethos) ethos.scrollIntoView({ behavior: 'smooth' });
         }}
         onBookClick={() => onOpenBookingModal()}
+        onWeatherClick={onOpenWeatherRadar}
       />
 
       {/* 2. Slow Travel Manifesto Ethos */}
@@ -167,6 +172,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
                 isOperatorView={false}
                 preSelectedPackage={preSelectedPackage}
                 onClearPreSelectedPackage={onClearPreSelectedPackage}
+                onOpenLegalPolicy={onOpenLegalPolicy}
               />
             </div>
           </div>
